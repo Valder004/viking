@@ -8,10 +8,17 @@ import { monterMenu, monterChapitres, monterFins, monterOptions, monterFin } fro
 
 export function demarrerJeu(racine) {
   let moteur = null;
+  let vue = null; // scène montée, à détruire en quittant
+
+  const quitterScene = () => {
+    moteur?.annulerChrono();
+    vue?.detruire();
+    vue = null;
+    racine.onclick = null;
+  };
 
   const menu = () => {
-    moteur?.annulerChrono();
-    racine.onclick = null;
+    quitterScene();
     monterMenu(racine, {
       continuer: () => {
         const etat = sauvegarde.lirePartie();
@@ -37,19 +44,20 @@ export function demarrerJeu(racine) {
   };
 
   const jouer = (etat, sceneId) => {
-    racine.onclick = null;
+    quitterScene();
     moteur = new Moteur({
       scenes: SCENES,
       etat,
       onScene: () => {},
-      onFin: (scene, e) =>
+      onFin: (scene, e) => {
+        quitterScene();
         monterFin(racine, scene, e, {
           onMenu: menu,
           onFins: () => monterFins(racine, { onRetour: menu }),
-        }),
+        });
+      },
     });
-    const { menuBtn } = monterScene(racine, moteur);
-    menuBtn.addEventListener('click', menu);
+    vue = monterScene(racine, moteur, { onMenu: menu });
     moteur.demarrer(sceneId);
   };
 

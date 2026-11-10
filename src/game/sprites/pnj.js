@@ -1,63 +1,49 @@
-// Silhouettes des personnages non joueurs, boîte 200×300, même échelle que le viking.
-import { PERSONNAGES } from '../../data/personnages.js';
+// Les personnages non joueurs : une configuration chacun, dessinée par personnage.js.
+// Pour modifier l'allure de quelqu'un, on change sa fiche ici.
+import { personnage } from './personnage.js';
 
-const OMBRE = 'rgba(0,0,0,0.25)';
+const OR = '#d6a640';
 
-function base(couleur, peau = '#e2b894') {
-  return `
-    <rect x="78" y="200" width="20" height="70" fill="#3a2d22"/>
-    <rect x="102" y="200" width="20" height="70" fill="#3a2d22"/>
-    <rect x="74" y="262" width="28" height="18" rx="4" fill="#241b14"/>
-    <rect x="98" y="262" width="28" height="18" rx="4" fill="#241b14"/>
-    <path d="M70 120 L130 120 L142 215 L58 215 Z" fill="${couleur}"/>
-    <path d="M100 120 L130 120 L142 215 L100 215 Z" fill="${OMBRE}"/>
-    <rect x="52" y="124" width="20" height="62" rx="8" fill="${couleur}"/>
-    <rect x="128" y="124" width="20" height="62" rx="8" fill="${couleur}"/>
-    <circle cx="62" cy="192" r="10" fill="${peau}"/><circle cx="138" cy="192" r="10" fill="${peau}"/>
-    <rect x="90" y="98" width="20" height="26" fill="${peau}"/>
-    <ellipse cx="100" cy="78" rx="26" ry="30" fill="${peau}"/>
-    <circle cx="90" cy="76" r="2.6" fill="#1f1b16"/><circle cx="110" cy="76" r="2.6" fill="#1f1b16"/>`;
-}
-
-const DETAILS = {
-  sigrid: (c) => `${base(c, '#f3d6b8')}
-    <path d="M74 72 Q74 42 100 44 Q126 42 126 72 Q114 60 100 60 Q86 60 74 72 Z" fill="#c4762e"/>
-    <rect x="68" y="70" width="9" height="70" rx="4" fill="#c4762e"/>
-    <circle cx="62" cy="164" r="44" fill="#1f3a5f"/><circle cx="62" cy="164" r="9" fill="#8b9096"/>
-    <line x1="18" y1="164" x2="106" y2="164" stroke="#f4efe6" stroke-width="12"/>`,
-  ulf: (c) => `${base(c, '#d8b58f')}
-    <path d="M74 72 Q74 42 100 44 Q126 42 126 72 L128 120 L118 118 L118 84 Q100 62 82 84 L82 118 L72 120 Z" fill="#d8d2c6"/>
-    <path d="M76 84 Q78 150 100 160 Q122 150 124 84 Q100 112 76 84 Z" fill="#d8d2c6"/>
-    <path d="M74 70 L128 82 L128 88 L74 76 Z" fill="#1f1b16"/><circle cx="110" cy="78" r="8" fill="#1f1b16"/>
-    <rect x="140" y="60" width="6" height="210" fill="#5a3b24"/><circle cx="143" cy="58" r="8" fill="#5a3b24"/>`,
-  eirik: (c) => `${base(c, '#f3d6b8')}
-    <path d="M74 72 Q74 42 100 44 Q126 42 126 72 Q114 60 100 60 Q86 60 74 72 Z" fill="#f0d58c"/>
-    <rect x="62" y="178" width="76" height="10" fill="#c9a24a"/>
-    <rect x="136" y="80" width="7" height="110" fill="#b7bcc2"/><rect x="128" y="186" width="22" height="6" fill="#c9a24a"/>`,
-  hakon: (c) => `${base(c, '#e2b894')}
-    <path d="M58 122 L142 122 L156 220 L44 220 Z" fill="#1a1230" opacity="0.85"/>
-    <path d="M70 120 L130 120 L142 215 L58 215 Z" fill="${c}"/>
-    <path d="M74 72 Q74 42 100 44 Q126 42 126 72 Q114 60 100 60 Q86 60 74 72 Z" fill="#2b1d14"/>
-    <path d="M76 84 Q78 136 100 146 Q122 136 124 84 Q100 112 76 84 Z" fill="#2b1d14"/>
-    <path d="M74 50 L80 38 L90 50 L100 36 L110 50 L120 38 L126 50 Z" fill="#c9a24a"/>`,
-  aude: (c) => `${base(c, '#f3d6b8')}
-    <path d="M70 120 L130 120 L150 270 L50 270 Z" fill="${c}"/>
-    <path d="M74 72 Q74 42 100 44 Q126 42 126 72 L128 130 L118 128 L118 84 Q100 62 82 84 L82 128 L72 130 Z" fill="#2b1d14"/>
-    <path d="M72 52 Q100 40 128 52 L128 60 Q100 50 72 60 Z" fill="#e9e2d2"/>`,
-  gautier: (c) => `${base(c, '#e2b894')}
-    <path d="M74 72 Q74 42 100 44 Q126 42 126 72 Q114 60 100 60 Q86 60 74 72 Z" fill="#d8d2c6"/>
-    <rect x="62" y="130" width="76" height="60" fill="#8b9096" opacity="0.7"/>`,
-  anselme: (c) => `${base(c, '#e2b894')}
-    <path d="M60 120 L140 120 L150 270 L50 270 Z" fill="${c}"/>
-    <path d="M74 72 Q74 46 100 46 Q126 46 126 72 Q114 64 100 64 Q86 64 74 72 Z" fill="#d8d2c6"/>
-    <rect x="60" y="176" width="80" height="8" fill="#5a3b24"/>`,
-  parent: (c) => `${base(c, '#e2b894')}
-    <path d="M70 120 L130 120 L148 270 L52 270 Z" fill="${c}"/>
-    <path d="M72 60 Q100 44 128 60 L128 74 Q100 60 72 74 Z" fill="#6e5a3a"/>`,
+const FICHES = {
+  sigrid: {
+    carrure: 'fine', peau: '#f3d6b8', cheveux: '#c4622a', coiffure: 'tresses', expression: 'dur',
+    tenue: '#8a3524', galon: '#e6c35c', plastron: '#5a3b24', pantalon: '#3d3328',
+    bouclier: { motif: 'quartiers', c1: '#1f3a5f', c2: '#f4efe6' }, arme: 'lance',
+    peinture: 'lignes', peintureCouleur: '#1f3a5f', yeux: '#3e6a5a',
+  },
+  ulf: {
+    carrure: 'moyenne', peau: '#dcbf9f', cheveux: '#d8d2c6', coiffure: 'long', barbe: 'longue', expression: 'triste',
+    tenue: '#5d6a78', galon: '#9aa7b3', cape: '#343c47', fourrure: '#9b9488',
+    cacheOeil: true, age: true, cicatrice: true, arme: 'baton', yeux: '#7d8a99',
+  },
+  eirik: {
+    carrure: 'fine', peau: '#f6dcc0', cheveux: '#f0d58c', coiffure: 'court', expression: 'narquois',
+    tenue: '#c9962f', galon: '#8a1c1c', cape: '#8a1c1c', pantalon: '#4a3b2e', arme: 'epee', yeux: '#4a7fa8',
+  },
+  hakon: {
+    carrure: 'large', peau: '#e2b894', cheveux: '#2b1d14', coiffure: 'long', barbe: 'longue', expression: 'dur',
+    tenue: '#3b2f5c', galon: OR, cape: '#1d1730', fourrure: '#6e5a44', bandeau: OR, anneaux: true,
+    arme: 'epee', pantalon: '#2e2733', age: true,
+  },
+  aude: {
+    carrure: 'fine', peau: '#f3d6b8', cheveux: '#2b1d14', coiffure: 'long', expression: 'dur',
+    robe: '#5f8f72', galon: '#e9dfc8', bandeau: '#e9dfc8', yeux: '#5a4632',
+  },
+  gautier: {
+    carrure: 'large', peau: '#e2b894', cheveux: '#c9c2b4', coiffure: 'court', barbe: 'courte', expression: 'triste',
+    tenue: '#8a8f96', galon: '#8a2c3f', mailles: true, cape: '#8a2c3f', arme: 'epee', age: true,
+  },
+  anselme: {
+    carrure: 'moyenne', peau: '#e2b894', cheveux: '#8c7a5a', coiffure: 'tonsure', expression: 'triste',
+    robe: '#6b5540', galon: '#4f3e2e', corde: true, age: true,
+  },
+  parent: {
+    carrure: 'fine', peau: '#e2b894', cheveux: '#8c7a6a', coiffure: 'foulard', foulard: '#c9bfa8', expression: 'triste',
+    robe: '#7d8a76', galon: '#c9bfa8', tablier: '#8a5a3a', age: true,
+  },
 };
 
 export function pnjContenu(id) {
-  const p = PERSONNAGES[id];
-  if (!p) return '';
-  return (DETAILS[id] ?? ((c) => base(c)))(p.couleur);
+  const fiche = FICHES[id];
+  return fiche ? personnage(fiche) : '';
 }
