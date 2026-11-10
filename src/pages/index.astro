@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../consts';
+---
+
+<BaseLayout>
+  <section class="hero">
+    <div class="container">
+      <h1>{SITE.name}</h1>
+      <p class="hero__lead">{SITE.description}</p>
+      <a class="button" href="/a-propos">En savoir plus</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding-block: clamp(3rem, 10vw, 7rem);
+  }
+  .hero h1 {
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+  }
+  .hero__lead {
+    max-width: 40rem;
+    font-size: 1.125rem;
+    color: var(--color-muted);
+    margin: 0 0 2rem;
+  }
+  .button {
+    display: inline-block;
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius);
+    background: var(--color-accent);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .button:hover {
+    filter: brightness(1.1);
+  }
+</style>
