@@ -5,6 +5,7 @@ import { vikingContenu } from './sprites/viking.js';
 import { pnjContenu } from './sprites/pnj.js';
 import { PERSONNAGES } from '../data/personnages.js';
 import { decouper } from './texte.js';
+import { OBJETS, iconeObjet } from '../data/objets.js';
 
 const echapper = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const VITESSE = 16; // ms par caractère
@@ -148,7 +149,7 @@ export function monterScene(racine, moteur, { onMenu }) {
     const scene = sceneCourante;
     const etat = moteur.etat;
     let html = choixCourants
-      .map((c, i) => `<button class="choix" data-choix="${i}" style="--i:${i}"><span class="choix__num">${i + 1}</span>${echapper(typeof c.texte === 'function' ? c.texte(etat) : c.texte)}</button>`)
+      .map((c, i) => `<button class="choix ${c.objet ? 'choix--objet' : ''}" data-choix="${i}" style="--i:${i}"><span class="choix__num">${i + 1}</span><span class="choix__texte">${echapper(typeof c.texte === 'function' ? c.texte(etat) : c.texte)}</span>${c.objet ? `<span class="choix__objet" title="${echapper(OBJETS[c.objet]?.nom ?? '')}">${iconeObjet(c.objet, 26)}</span>` : ''}</button>`)
       .join('');
     if (scene.aSuivre) html += `<button class="choix" data-action="menu"><span class="choix__num">↩</span>Retour au menu</button>`;
     choixEl.innerHTML = html;
@@ -186,7 +187,7 @@ export function monterScene(racine, moteur, { onMenu }) {
     moteur.choisir(c);
   }
 
-  moteur.onScene = (scene, choix) => {
+  const afficher = (scene, choix) => {
     sceneCourante = scene;
     choixCourants = choix;
     finirFrappe();
@@ -231,6 +232,7 @@ export function monterScene(racine, moteur, { onMenu }) {
   document.addEventListener('keydown', clavier);
 
   return {
+    afficher,
     detruire() {
       finirFrappe();
       document.removeEventListener('keydown', clavier);

@@ -321,7 +321,24 @@ Cinq chronos dans tout le jeu : tempête (8 s), embuscade (6 s), signal (5 s), c
 
 ---
 
-## 11. Prochaine étape (après validation)
+## 11. Exploration, objets et relations
+
+Le jeu alterne deux modes :
+
+- **Scènes de dialogue** : décor plein écran, répliques une à une, choix. C'est là que l'histoire avance.
+- **Lieux explorables** : on se déplace au clic (ou aux flèches), on s'approche des gens et des choses. Chaque lieu a ses **quêtes** (obligatoires ou facultatives), ses **objets** à ramasser et une **sortie** qui ne s'ouvre que lorsque l'essentiel est fait.
+
+**Objets.** Ce qu'on porte ouvre des choix : un choix marqué d'un objet n'apparaît que si on l'a, et le consomme. Un seul pain sur le quai : le donner à Njörd ou au chien. Le hareng nourrit le chien mais ne vaut rien comme offrande. Fouiller un lieu change donc ce qu'on peut faire, sans que le jeu le dise.
+
+**Relations.** Les conversations facultatives (Eirik sur le quai) font monter ou baisser la confiance. Le joueur ne voit jamais de chiffre : une notification dit « Eirik te fait un peu plus confiance », et le **carnet** décrit chaque compagnon en une phrase (« reste sur ses gardes », « compte sur toi »…).
+
+**Premier lieu** : le port, la nuit avant le départ (ch.1). Ulf, Sigrid, Eirik, le chien, le pain, le tonneau de harengs, l'eau noire au bout du quai.
+
+**À venir** : l'îlot du ch.2 (feu de camp), le monastère et le camp du ch.3, la cour du château au ch.4.
+
+---
+
+## 12. Prochaine étape (après validation)
 
 1. Moteur : `src/game/engine.js` (machine à scènes, variables, conditions, chronos, sauvegarde localStorage).
 2. Données : `src/data/chapitre-1.js` … `chapitre-5.js`, `src/data/personnages.js`, `src/data/fins.js`. Format : une scène = `{ id, decor, texte, personnages, choix: [{ texte, condition, effets, suivant }] }`.

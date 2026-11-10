@@ -14,6 +14,8 @@ export const fx = {
     e.sante = borne(e.sante - 1, 0, 3);
   },
   tuer: (qui) => (e) => { e.morts[qui] = true; },
+  prendre: (objet) => (e) => { if (!e.inventaire.includes(objet)) e.inventaire.push(objet); },
+  perdre: (objet) => (e) => { e.inventaire = e.inventaire.filter((o) => o !== objet); },
   tous: (...effets) => (e) => effets.forEach((f) => f(e)),
 };
 
@@ -21,6 +23,7 @@ export const si = {
   origine: (o) => (e) => e.perso.origine === o,
   flag: (nom) => (e) => Boolean(e.flags[nom]),
   pasFlag: (nom) => (e) => !e.flags[nom],
+  objet: (id) => (e) => e.inventaire.includes(id),
   vivant: (qui) => (e) => !e.morts[qui],
   mort: (qui) => (e) => Boolean(e.morts[qui]),
   blesse: (type) => (e) => e.blessures.includes(type),

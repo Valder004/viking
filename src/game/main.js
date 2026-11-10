@@ -4,21 +4,26 @@ import { Moteur, etatInitial } from './moteur.js';
 import { sauvegarde } from './sauvegarde.js';
 import { monterCreateur } from './createur.js';
 import { monterScene } from './scene.js';
+import { monterLieu } from './lieu.js';
+import { notifier, viderNotifs } from './notif.js';
 import { monterMenu, monterChapitres, monterFins, monterOptions, monterFin } from './ecrans.js';
 
 export function demarrerJeu(racine) {
   let moteur = null;
-  let vue = null; // scène montée, à détruire en quittant
+  let vue = null; // vue montée (dialogue ou exploration), à détruire en quittant
+  let mode = null; // 'dialogue' | 'lieu'
 
-  const quitterScene = () => {
+  const quitterVue = () => {
     moteur?.annulerChrono();
     vue?.detruire();
     vue = null;
+    mode = null;
     racine.onclick = null;
   };
 
   const menu = () => {
-    quitterScene();
+    quitterVue();
+    viderNotifs();
     monterMenu(racine, {
       continuer: () => {
         const etat = sauvegarde.lirePartie();
@@ -44,20 +49,32 @@ export function demarrerJeu(racine) {
   };
 
   const jouer = (etat, sceneId) => {
-    quitterScene();
+    quitterVue();
     moteur = new Moteur({
       scenes: SCENES,
       etat,
-      onScene: () => {},
+      onNotif: notifier,
+      onScene: (scene, choix) => {
+        if (mode !== 'dialogue') {
+          vue?.detruire();
+          vue = monterScene(racine, moteur, { onMenu: menu });
+          mode = 'dialogue';
+        }
+        vue.afficher(scene, choix);
+      },
+      onLieu: (lieu) => {
+        vue?.detruire();
+        vue = monterLieu(racine, moteur, lieu, { onMenu: menu });
+        mode = 'lieu';
+      },
       onFin: (scene, e) => {
-        quitterScene();
+        quitterVue();
         monterFin(racine, scene, e, {
           onMenu: menu,
           onFins: () => monterFins(racine, { onRetour: menu }),
         });
       },
     });
-    vue = monterScene(racine, moteur, { onMenu: menu });
     moteur.demarrer(sceneId);
   };
 

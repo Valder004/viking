@@ -17,8 +17,11 @@ function chien(x, y) {
 export function port(etat, nbPnj = 0) {
   const nuit = Boolean(etat?.flags?.c1_nuit);
   const scene = etat?.scene ?? '';
-  const nbCorbeaux = scene === 'c1_port_ulf' ? 3 : scene.startsWith('c1_aube') || !scene.startsWith('c1_') ? 0 : 2;
-  const avecChien = scene === 'c1_chien' || (scene === 'c1_aube' && etat?.flags?.chien_nourri);
+  const f = etat?.flags ?? {};
+  // Trois corbeaux tant qu'Ulf n'a pas parlé, deux ensuite, plus aucun à l'aube.
+  const nbCorbeaux = scene === 'c1_aube' || !scene.startsWith('c1_') ? 0 : f.c1_ulf_vu ? 2 : 3;
+  // Le chien reste près des caisses tant qu'on ne l'a pas chassé ; à l'aube, il ne revient que nourri.
+  const avecChien = scene === 'c1_aube' ? Boolean(f.chien_nourri) : scene.startsWith('c1_') && !f.chien_chasse;
 
   const bois = nuit ? '#231810' : '#3a2718';
   const boisSombre = nuit ? '#150e09' : '#2a1c12';
