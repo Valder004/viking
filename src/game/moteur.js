@@ -85,7 +85,8 @@ export class Moteur {
     if (!scene.chrono) return null;
     const facteur = DUREES[this.options.chrono] ?? 1;
     if (facteur === 0) return null;
-    return { duree: scene.chrono.duree * facteur };
+    const duree = typeof scene.chrono.duree === 'function' ? scene.chrono.duree(this.etat) : scene.chrono.duree;
+    return { duree: duree * facteur };
   }
 
   lancerChrono(scene, onTick) {

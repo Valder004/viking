@@ -187,6 +187,19 @@
 @keyframes brume { 0%, 100% { opacity: 0.35; transform: translateX(0); } 50% { opacity: 0.55; transform: translateX(40px); } }
 @keyframes fumee { from { transform: translateY(0) scale(1); opacity: 0.5; } to { transform: translateY(-90px) scale(1.8); opacity: 0; } }
 @keyframes oiseau { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes pluie { from { transform: translateY(-60px); } to { transform: translateY(0); } }
+@keyframes eclair { 0%, 88%, 94%, 100% { opacity: 0; } 90%, 92% { opacity: 1; } }
+@keyframes roulis { 0%, 100% { transform: rotate(-2.5deg) translateY(0); } 50% { transform: rotate(2.5deg) translateY(8px); } }
+@keyframes roulis-fort { 0%, 100% { transform: rotate(-6deg) translateY(0); } 50% { transform: rotate(6deg) translateY(16px); } }
+@keyframes etoile { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+.anim-pluie { animation: pluie 0.45s linear infinite; }
+.anim-eclair { animation: eclair 7s linear infinite; }
+.anim-eclair--2 { animation-delay: -3.7s; animation-duration: 11s; }
+.anim-roulis { animation: roulis 5s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+.anim-roulis--fort { animation: roulis-fort 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+.anim-etoile { animation: etoile 3s ease-in-out infinite; }
+.anim-etoile--2 { animation-delay: -1.2s; animation-duration: 4.2s; }
 
 .anim-flamme { animation: flamme 0.9s ease-in-out infinite alternate; transform-box: fill-box; transform-origin: 50% 100%; }
 .anim-flamme--2 { animation-duration: 0.7s; animation-delay: -0.3s; }

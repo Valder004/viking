@@ -23,8 +23,12 @@ export function composerDecor(scene, etat) {
     .join('');
   const moi = scene.sansJoueur ? '' : groupe(vikingContenu(etat.perso.apparence, etat), joueur);
 
-  // Le joueur est dessiné après les PNJ : il est devant.
-  return svg.replace('</svg>', `${persos}${moi}</svg>`);
+  // Le joueur est dessiné après les PNJ : il est devant. Un décor peut placer le
+  // repère <!--persos--> pour que des éléments (bastingage, brume) passent devant eux.
+  const calque = `${persos}${moi}`;
+  return svg.includes('<!--persos-->')
+    ? svg.replace('<!--persos-->', calque)
+    : svg.replace('</svg>', `${calque}</svg>`);
 }
 
 export function monterScene(racine, moteur) {

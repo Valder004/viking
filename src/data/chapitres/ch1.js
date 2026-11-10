@@ -368,18 +368,4 @@ Quelqu'un te tend une rame. C'est lourd. C'est exactement le poids que tu imagin
     },
     choix: [{ texte: 'Monter à bord.', suivant: 'c2_depart' }],
   },
-
-  // Chapitre 2 pas encore écrit : écran d'attente.
-  {
-    id: 'c2_depart',
-    chapitre: 2,
-    decor: 'port',
-    personnages: [],
-    aSuivre: true,
-    texte: `
-*Le chapitre 2, « Le drakkar », n'est pas encore écrit.*
-
-Ta partie est sauvegardée ici. Quand le chapitre sera en place, tu reprendras à ce banc de nage, avec le viking et les choix que tu viens de faire.`,
-    choix: [],
-  },
 ];
