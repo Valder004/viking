@@ -15,6 +15,20 @@ export const OBJETS = {
       <path d="M29 20 l8 -7 l0 14 Z" fill="#7d8e9b"/><circle cx="10" cy="18.500" r="1.800" fill="#1a110a"/>
       <path d="M15 16 l0 8 M20 15 l0 10" stroke="rgba(0,0,0,0.3)" stroke-width="1.200"/>`,
   },
+  biere: {
+    nom: 'Corne de bière',
+    description: 'Tirée au tonneau de la halle pendant que personne ne regardait. Elle mousse encore.',
+    icone: `<path d="M8 8 Q6 30 20 36 Q34 30 32 8 Z" fill="#e9dfc8"/><path d="M20 8 L32 8 Q34 30 20 36 Z" fill="rgba(0,0,0,0.18)"/>
+      <path d="M8 8 L32 8" stroke="#c9963f" stroke-width="3"/><path d="M9 14 L31 14" stroke="#b9ad94" stroke-width="1.500"/>
+      <ellipse cx="20" cy="7" rx="12" ry="3.500" fill="#f4e6b0"/><circle cx="15" cy="5.500" r="2" fill="#fff8e0"/><circle cx="23" cy="4.800" r="2.400" fill="#fff8e0"/>`,
+  },
+  poisson: {
+    nom: 'Poisson grillé',
+    description: 'Pris sur la broche de l’îlot. Encore chaud. La seule chose honnête de ce voyage.',
+    icone: `<path d="M4 20 Q16 8 30 20 Q16 32 4 20 Z" fill="#8a6a48"/><path d="M4 20 Q16 32 30 20 Q16 24 4 20 Z" fill="rgba(0,0,0,0.25)"/>
+      <path d="M29 20 l8 -7 l0 14 Z" fill="#6b5236"/><circle cx="10" cy="18.500" r="1.800" fill="#1a110a"/>
+      <path d="M13 15 l4 10 M19 14 l4 12 M25 16 l2 8" stroke="#3a2718" stroke-width="1.500"/>`,
+  },
   hamecon: {
     nom: 'Hameçon de bronze',
     description: 'Celui de ton père. Il n’a jamais rien pris de gros, mais il n’a jamais cassé.',

@@ -36,20 +36,20 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
     <section class="jeu jeu--lieu">
       <div class="jeu__scene" data-decor></div>
       <div class="hud hud--haut">
-        <div class="hud__lieu">
+        <div class="hud__lieu panneau">
           <h2>${echapper(lieu.titre ?? '')}</h2>
           <ul class="quetes" data-quetes></ul>
         </div>
         <div class="hud__boutons">
-          <button class="hud__btn" data-action="carnet">Carnet</button>
-          <button class="hud__btn" data-action="menu">Menu</button>
+          <button class="btn-bois" data-action="carnet">Carnet</button>
+          <button class="btn-bois" data-action="menu">Menu</button>
         </div>
       </div>
       <div class="hud hud--bas">
-        <div class="inventaire" data-inventaire></div>
+        <div class="inventaire panneau" data-inventaire></div>
         <p class="hud__aide" data-aide></p>
       </div>
-      <div class="bulle" data-bulle hidden></div>
+      <div class="bulle panneau" data-bulle hidden></div>
       <div class="carnet" data-carnet hidden></div>
     </section>`;
 
@@ -60,7 +60,7 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
   const aideEl = $('[data-aide]');
   const bulleEl = $('[data-bulle]');
   const carnetEl = $('[data-carnet]');
-  const AIDE = 'Clique sur le sol pour marcher, sur quelqu’un ou quelque chose pour t’en approcher.';
+  const AIDE = 'Clique pour marcher. Approche-toi des gens et des choses.';
 
   const visibles = () => lieu.elements.filter((el) => !etat.flags[`pris_${el.id}`] && (!el.visible || el.visible(etat)));
   const actionDe = (el) => (typeof el.action === 'function' ? el.action(etat) : el.action) ?? {};
@@ -68,19 +68,24 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
 
   // ---- Dessin ---------------------------------------------------------------
   function svgElement(el) {
-    const marque = (x, y) => `<g class="marqueur ${important(el) ? 'marqueur--fort' : ''}" transform="translate(${x} ${y})">
-      <g class="marqueur__anim">${important(el)
-        ? '<circle r="11" fill="#e07a4f"/><path d="M0 -6 L0 2 M0 5.500 L0 6" stroke="#15130f" stroke-width="3" stroke-linecap="round"/>'
-        : '<circle r="5" fill="#fff" opacity="0.85"/><circle r="9" fill="none" stroke="#fff" stroke-width="1.500" opacity="0.5"/>'}</g></g>`;
+    // Marqueurs discrets : un petit losange ambré pour ce qui fait avancer l'histoire,
+    // une étincelle pâle pour le reste. Le nom n'apparaît qu'au survol.
+    const marque = (x, y) => `<g class="marqueur" transform="translate(${x} ${y})">
+      <g class="marqueur__anim ${important(el) ? 'marqueur__anim--fort' : ''}">${important(el)
+        ? '<circle r="8" fill="#e0a04f" opacity="0.16"/><path d="M0 -4.500 L3.600 0 L0 4.500 L-3.600 0 Z" fill="#e0a04f"/>'
+        : '<path d="M0 -4 Q0.800 -0.800 4 0 Q0.800 0.800 0 4 Q-0.800 0.800 -4 0 Q-0.800 -0.800 0 -4 Z" fill="#fff"/>'}</g>
+      <text class="etiquette" y="-11" text-anchor="middle">${echapper(el.nom)}</text></g>`;
 
     if (el.type === 'pnj') {
-      const x0 = el.x - 100 * ECHELLE;
-      const y0 = sol.y - HAUT;
+      const ech = el.echelle ?? ECHELLE;
+      const haut = 285 * ech;
+      const x0 = el.x - 100 * ech;
+      const y0 = (el.solY ?? sol.y) - haut;
       const t = el.miroir
-        ? `translate(${x0 + 200 * ECHELLE} ${y0}) scale(${-ECHELLE} ${ECHELLE})`
-        : `translate(${x0} ${y0}) scale(${ECHELLE})`;
+        ? `translate(${x0 + 200 * ech} ${y0}) scale(${-ech} ${ech})`
+        : `translate(${x0} ${y0}) scale(${ech})`;
       return `<g class="lieu-el" data-el="${el.id}"><g transform="${t}"><g class="perso">${pnjContenu(el.perso)}</g></g>
-        <rect x="${el.x - 34}" y="${y0}" width="68" height="${HAUT}" fill="transparent"/>${marque(el.x, y0 - 4)}</g>`;
+        <rect x="${el.x - 56 * ech}" y="${y0}" width="${112 * ech}" height="${haut}" fill="transparent"/>${marque(el.x, y0 + 6 * ech)}</g>`;
     }
     if (el.type === 'objet') {
       return `<g class="lieu-el" data-el="${el.id}">
@@ -90,8 +95,10 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
     if (el.type === 'sortie') {
       return `<g class="lieu-el" data-el="${el.id}">
         <rect x="${el.x - 34}" y="${sol.y - HAUT}" width="68" height="${HAUT}" fill="transparent"/>
-        <g class="marqueur marqueur--sortie" transform="translate(${el.x} ${sol.y - 70})"><g class="marqueur__anim">
-          <circle r="17" fill="#15130f" opacity="0.75"/><path d="${el.x < 400 ? 'M5 -8 L-5 0 L5 8' : 'M-5 -8 L5 0 L-5 8'}" fill="none" stroke="#e07a4f" stroke-width="3.500" stroke-linecap="round" stroke-linejoin="round"/></g></g></g>`;
+        <g class="marqueur marqueur--sortie" transform="translate(${el.x} ${sol.y - 78})">
+          <circle r="13" fill="#1a120b" stroke="#6b5a3a" stroke-width="1.200" opacity="0.9"/>
+          <path d="${el.x < 400 ? 'M4 -6 L-4 0 L4 6' : 'M-4 -6 L4 0 L-4 6'}" fill="none" stroke="#e0a04f" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round"/>
+          <text class="etiquette" y="-20" text-anchor="${el.x < 400 ? 'start' : 'end'}" x="${el.x < 400 ? -12 : 12}">${echapper(el.nom)}</text></g></g>`;
     }
     // zone : quelque chose du décor
     const l = el.l ?? 60;
@@ -112,7 +119,8 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
     const calque = `${visibles().map(svgElement).join('')}
       <g data-joueur transform="${transformJoueur()}"><g class="perso marcheur" data-marcheur>${vikingContenu(etat.perso.apparence, etat)}</g></g>`;
     const complet = svg.includes('<!--persos-->') ? svg.replace('<!--persos-->', calque) : svg.replace('</svg>', `${calque}</svg>`);
-    decorEl.innerHTML = complet.replace('<svg ', '<svg preserveAspectRatio="xMidYMid slice" ');
+    // Ancré en bas : sur un écran très large, c'est le ciel qui est rogné, jamais le sol.
+    decorEl.innerHTML = complet.replace('<svg ', '<svg preserveAspectRatio="xMidYMax slice" ');
   }
 
   function majHud() {
@@ -123,9 +131,13 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
         return `<li class="${ok ? 'est-faite' : ''}"><span class="quetes__case">${ok ? '✓' : ''}</span><span>${echapper(q.texte)}${q.facultatif ? ' <em>(facultatif)</em>' : ''}</span></li>`;
       })
       .join('');
-    invEl.innerHTML = etat.inventaire.length
-      ? etat.inventaire.map((id) => `<button class="inventaire__case" data-objet="${id}" title="${echapper(OBJETS[id]?.nom ?? id)}">${iconeObjet(id, 36)}</button>`).join('')
-      : '<span class="inventaire__vide">Tes mains sont vides.</span>';
+    const cases = Math.max(5, etat.inventaire.length);
+    invEl.innerHTML = `<span class="inventaire__titre">Besace</span>` + Array.from({ length: cases }, (_, i) => {
+      const id = etat.inventaire[i];
+      return id
+        ? `<button class="inventaire__case est-pleine" data-objet="${id}" title="${echapper(OBJETS[id]?.nom ?? id)}">${iconeObjet(id, 34)}</button>`
+        : `<span class="inventaire__case"></span>`;
+    }).join('');
   }
 
   // ---- Bulle et carnet --------------------------------------------------------
@@ -138,8 +150,8 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
   function ouvrirCarnet() {
     const compagnons = ['sigrid', 'ulf', 'eirik', 'aude'].filter((id) => id !== 'aude' || etat.flags.aude_rencontree);
     carnetEl.innerHTML = `
-      <div class="carnet__page">
-        <button class="hud__btn carnet__fermer" data-action="fermer-carnet">Fermer</button>
+      <div class="carnet__page panneau">
+        <button class="btn-bois carnet__fermer" data-action="fermer-carnet">Fermer</button>
         <h2>Carnet</h2>
         <h3>Ceux qui t’entourent</h3>
         <ul class="carnet__liste">
@@ -193,12 +205,19 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
 
   // ---- Déplacement ------------------------------------------------------------
   function allerVers(x, element = null) {
+    aideEl.classList.add('est-lue'); // l'aide s'efface dès le premier pas
     const borne = Math.max(sol.xmin, Math.min(sol.xmax, x));
     cible = { x: borne, element };
     if (!boucle) {
       dernier = performance.now();
-      boucle = requestAnimationFrame(pas);
+      // Minuterie plutot que requestAnimationFrame : la marche continue meme si l affichage est suspendu.
+      boucle = setInterval(() => pas(performance.now()), 16);
     }
+  }
+
+  function arreter() {
+    if (boucle) clearInterval(boucle);
+    boucle = null;
   }
 
   function pas(t) {
@@ -208,7 +227,7 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
     const joueur = decorEl.querySelector('[data-joueur]');
     const marcheur = decorEl.querySelector('[data-marcheur]');
     if (!cible || !joueur) {
-      boucle = null;
+      arreter();
       return;
     }
     const d = cible.x - px;
@@ -216,7 +235,7 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
       px = cible.x;
       const el = cible.element;
       cible = null;
-      boucle = null;
+      arreter();
       marcheur?.classList.remove('marche');
       joueur.setAttribute('transform', transformJoueur());
       etat.lieux[lieu.id] = px;
@@ -227,7 +246,6 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
     px += sens * VITESSE * dt;
     marcheur?.classList.add('marche');
     joueur.setAttribute('transform', transformJoueur());
-    boucle = requestAnimationFrame(pas);
   }
 
   function pointDecor(ev) {
@@ -253,12 +271,6 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
     allerVers(pointDecor(ev).x);
   });
 
-  decorEl.addEventListener('mousemove', (ev) => {
-    const cibleEl = ev.target.closest('[data-el]');
-    const el = cibleEl && lieu.elements.find((x) => x.id === cibleEl.dataset.el);
-    aideEl.textContent = el ? el.nom : AIDE;
-    aideEl.classList.toggle('est-cible', Boolean(el));
-  });
 
   racine.querySelector('.jeu--lieu').addEventListener('click', (ev) => {
     const b = ev.target.closest('button');
@@ -291,7 +303,7 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
   return {
     detruire() {
       detruit = true;
-      if (boucle) cancelAnimationFrame(boucle);
+      arreter();
       document.removeEventListener('keydown', clavier);
       etat.lieux[lieu.id] = px;
     },

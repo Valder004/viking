@@ -8,16 +8,57 @@ const prendreObjetFamille = (e) => fx.prendre(objet(e).id)(e);
 const perdreObjetFamille = (e) => fx.perdre(objet(e).id)(e);
 
 export const CH1 = [
-  // ---------------------------------------------------------------- La hutte
+  // ------------------------------------------------- La hutte (exploration)
   {
     id: 'c1_hutte',
     chapitre: 1,
+    type: 'lieu',
+    decor: 'hutte',
+    titre: 'La hutte, avant l’aube',
+    arrivee: 'Il fait encore nuit quand ta mère te secoue. Elle ne dit rien. Elle a ce visage des matins où quelqu’un part. Le feu est déjà ranimé.',
+    sol: { y: 424, xmin: 70, xmax: 740 },
+    depart: 420,
+    quetes: [
+      { texte: 'Parler à ta mère', fait: si.flag('c1_mere_vue') },
+      { texte: 'Regarder une dernière fois', fait: si.et(si.flag('c1_bouclier_vu'), si.flag('c1_fenetre_vue')), facultatif: true },
+      { texte: 'Aller à la grande halle', visible: si.flag('c1_mere_vue'), fait: () => false },
+    ],
+    elements: [
+      {
+        id: 'metier', type: 'zone', x: 92, y: 180, l: 120, h: 220, nom: 'Le métier à tisser',
+        action: { examiner: 'La toile rouge n’est pas finie. Elle ne le sera pas avant ton retour, et ta mère le sait : elle a cessé de tisser le jour où Hakon a parlé de la Francie.' },
+      },
+      {
+        id: 'mere', type: 'pnj', perso: 'parent', x: 190, nom: 'Ta mère',
+        important: si.pasFlag('c1_mere_vue'),
+        action: (e) => (e.flags.c1_mere_vue
+          ? { examiner: e.flags.objet_refuse ? 'Elle a refermé la main sur l’objet. Elle ne le rouvrira pas.' : 'Elle regarde le feu. Elle a dit ce qu’elle avait à dire, et une chose de moins.' }
+          : { scene: 'c1_hutte_mere' }),
+      },
+      {
+        id: 'bouclier', type: 'zone', x: 316, y: 126, l: 100, h: 100, nom: 'Le bouclier de ton père',
+        action: { examiner: 'Fendu d’un coup de hache, du bord jusqu’à l’umbo. On te l’a rapporté il y a six ans, sans lui. Ta mère l’a accroché là où on le voit depuis la couche, et depuis la porte.', effets: fx.flag('c1_bouclier_vu') },
+      },
+      {
+        id: 'foyer', type: 'zone', x: 362, y: 300, l: 150, h: 80, nom: 'Le foyer',
+        action: { examiner: (e) => (e.perso.origine === 'forgeron' ? 'Le chaudron fuit à la soudure. Tu l’as réparé deux fois. Tu ne le répareras pas une troisième ; pas ce matin.' : 'Une soupe d’orge. Elle a mis le dernier morceau de lard. Tu fais semblant de ne pas le remarquer.') },
+      },
+      {
+        id: 'fenetre', type: 'zone', x: 705, y: 140, l: 150, h: 150, nom: 'La fenêtre',
+        action: { examiner: 'La neige tombe droite, sans vent, comme si elle aussi attendait. En bas, le port se réveille : un seau, une corde, quelqu’un qui tousse.', effets: fx.flag('c1_fenetre_vue') },
+      },
+      {
+        id: 'sortie', type: 'sortie', x: 756, nom: 'Sortir',
+        action: { suivant: 'c1_halle', condition: si.flag('c1_mere_vue'), refus: 'Ta mère est debout près du métier à tisser. Elle ne t’appelle pas. C’est à toi d’y aller.' },
+      },
+    ],
+  },
+  {
+    id: 'c1_hutte_mere',
     decor: 'hutte',
     personnages: ['parent'],
     texte: (e) => `
-Il fait encore nuit quand ta mère te secoue. Elle ne dit rien. Elle a ce visage des matins où quelqu'un part.
-
-Le feu est déjà ranimé. Dehors, la neige tombe droite, sans vent, comme si elle aussi attendait. Tu entends le port se réveiller : un seau, une corde, quelqu'un qui tousse.
+Elle ne dit rien d'abord. Dehors, la neige tombe droite, sans vent.
 
 Elle ouvre la main. Dedans, ${objet(e).nom}.
 
@@ -46,6 +87,7 @@ ${objet(e).texte}`,
     id: 'c1_hutte_sortie',
     decor: 'hutte',
     personnages: ['parent'],
+    entree: fx.flag('c1_mere_vue'),
     texte: (e) => {
       if (e.flags.promesse_retour)
         return `Elle hoche la tête. Elle a entendu cette phrase trois fois dans sa vie. Elle sait exactement ce qu'elle vaut.
@@ -65,12 +107,139 @@ Ce n'est pas un compliment. Ce n'est pas une insulte non plus. Tu enfiles ta tun
 
 Tu enfiles ta tunique. Le froid entre par la porte avant toi.`;
     },
-    choix: [{ texte: 'Aller à la grande halle.', suivant: 'c1_halle' }],
+    choix: [{ texte: 'Enfiler ta tunique.', suivant: 'c1_hutte' }],
   },
 
-  // ------------------------------------------------------------- La grande halle
+  // ------------------------------------------- La grande halle (exploration)
   {
     id: 'c1_halle',
+    type: 'lieu',
+    decor: 'halle',
+    titre: 'La grande halle',
+    arrivee: 'La halle sent la fumée, la bière et la laine mouillée. Tout le village tient dedans. Hakon n’a pas encore parlé, et tout le monde attend qu’il le fasse.',
+    sol: { y: 436, xmin: 110, xmax: 690 },
+    depart: 400,
+    quetes: [
+      { texte: 'Écouter le jarl', fait: si.flag('c1_discours_vu') },
+      { texte: 'Prendre la température de la halle', fait: si.et(si.flag('c1_halle_sigrid'), si.flag('c1_halle_ulf')), facultatif: true },
+      { texte: 'Sortir prendre l’air', visible: si.flag('c1_discours_vu'), fait: () => false },
+    ],
+    elements: [
+      {
+        id: 'ulf', type: 'pnj', perso: 'ulf', x: 180, miroir: true, nom: 'Ulf le Borgne',
+        action: (e) => (e.flags.c1_halle_ulf
+          ? { examiner: 'Ulf ne regarde pas Hakon. Il regarde l’endroit où Hakon regarde. C’est différent.' }
+          : { scene: 'c1_halle_ulf' }),
+      },
+      {
+        id: 'sigrid', type: 'pnj', perso: 'sigrid', x: 286, miroir: true, nom: 'Sigrid',
+        action: (e) => (e.flags.c1_halle_sigrid
+          ? { examiner: 'Sigrid est déjà debout. Elle sera debout avant tout le monde, ce soir et tous les autres.' }
+          : { scene: 'c1_halle_sigrid' }),
+      },
+      {
+        id: 'hakon', type: 'pnj', perso: 'hakon', x: 400, solY: 300, echelle: 0.44, nom: 'Hakon, le jarl',
+        important: si.pasFlag('c1_discours_vu'),
+        action: (e) => (e.flags.c1_discours_vu
+          ? { examiner: 'Hakon est rassis. Il a dit ce qu’il avait à dire, et compté ceux qui ont crié avec lui.' }
+          : { scene: 'c1_halle_discours' }),
+      },
+      {
+        id: 'tenture', type: 'zone', x: 400, y: 144, l: 200, h: 120, nom: 'La tenture',
+        action: { examiner: 'Un drakkar brodé d’or sur fond rouge. Il date du vieux jarl. Hakon l’a gardée ; il a seulement fait découdre le nom.', effets: fx.flag('c1_tenture_vue') },
+      },
+      {
+        id: 'eirik', type: 'pnj', perso: 'eirik', x: 540, nom: 'Eirik',
+        action: (e) => ({ examiner: e.flags.c1_discours_vu
+          ? (e.flags.eirik_humilie ? 'Eirik ne te regarde plus. Il regarde la porte.' : 'Eirik fait semblant de ne pas t’avoir vu. Il n’est pas doué.')
+          : 'Eirik, le fils du jarl, debout à côté du siège haut. Il te cherche des yeux. Il a déjà sa phrase prête.' }),
+      },
+      {
+        id: 'tonneau', type: 'zone', x: 668, y: 340, l: 70, h: 80, nom: 'Le tonneau de bière',
+        action: { prendre: 'biere', texte: 'Tu remplis une corne pendant que tout le monde regarde Hakon. Elle mousse. Tu la tiens droite.' },
+      },
+      {
+        id: 'sortie', type: 'sortie', x: 686, nom: 'Sortir prendre l’air',
+        action: { suivant: 'c1_port', condition: si.flag('c1_discours_vu'), refus: 'Personne ne sort pendant que le jarl se lève. Et il va se lever.' },
+      },
+    ],
+  },
+  {
+    id: 'c1_halle_ulf',
+    decor: 'halle',
+    personnages: ['ulf'],
+    entree: fx.flag('c1_halle_ulf'),
+    texte: `
+Ulf le Borgne est assis tout au bout du banc, là où la lumière du feu n'arrive plus qu'à moitié. Il ne boit pas. Il regarde Hakon.
+
+**Ulf :** « Tu vois comme il se tient ? Les épaules en arrière. Il a répété. »
+
+Il ne te regarde toujours pas.
+
+**Ulf :** « Écoute ce qu'il va dire. Puis écoute ce qu'il ne dira pas. C'est là que ça se passe. »`,
+    choix: [
+      { texte: 'Lui tendre la corne de bière.', objet: 'biere', effets: fx.tous(fx.flag('ulf_biere'), fx.confiance('ulf', 1)), suivant: 'c1_halle_ulf_suite' },
+      { texte: '« Et toi, tu as répété quoi ? »', effets: fx.confiance('ulf', 1), suivant: 'c1_halle_ulf_suite' },
+      { texte: 'Hocher la tête et retourner vers le feu.', suivant: 'c1_halle' },
+    ],
+  },
+  {
+    id: 'c1_halle_ulf_suite',
+    decor: 'halle',
+    personnages: ['ulf'],
+    texte: (e) => (e.flags.ulf_biere
+      ? `Il prend la corne, la regarde, et boit. Longtemps. Quand il la rend, elle est vide.
+
+**Ulf :** « La dernière fois qu'on m'a offert à boire dans cette halle, c'était le vieux jarl. La veille du raid. » Il essuie sa bouche. « Il est mort dans son lit. Les hommes qui ont ramé pour lui, non. »
+
+Il te regarde enfin, de son seul œil, et il y a quelque chose là-dedans qui ressemble à de la gratitude. Ou à de la pitié. Avec Ulf, c'est souvent la même chose.`
+      : `Un silence. Puis quelque chose qui pourrait être un rire, ou une toux.
+
+**Ulf :** « Moi ? Je répète la même chose depuis six ans. Personne ne m'a encore demandé le texte. »
+
+Il se retourne vers Hakon. La conversation est finie, mais il n'a pas dit non.`),
+    choix: [{ texte: 'Retourner vers le feu.', suivant: 'c1_halle' }],
+  },
+  {
+    id: 'c1_halle_sigrid',
+    decor: 'halle',
+    personnages: ['sigrid'],
+    entree: fx.flag('c1_halle_sigrid'),
+    texte: `
+Sigrid est debout. Tout le monde est assis, et elle est debout, les bras croisés, la lance posée contre le pilier.
+
+**Sigrid :** « Tu viens ? »
+
+Ce n'est pas une question sur ce soir. C'est une question sur toi.`,
+    choix: [
+      { texte: '« Je viens. »', effets: fx.confiance('sigrid', 1), suivant: 'c1_halle_sigrid_suite' },
+      { texte: '« Si Hakon me veut. »', effets: fx.tous(fx.flag('sigrid_prudent'), fx.confiance('sigrid', -1)), suivant: 'c1_halle_sigrid_suite' },
+      { texte: 'Lui tendre la corne de bière.', objet: 'biere', effets: fx.flag('sigrid_biere'), suivant: 'c1_halle_sigrid_suite' },
+    ],
+  },
+  {
+    id: 'c1_halle_sigrid_suite',
+    decor: 'halle',
+    personnages: ['sigrid'],
+    texte: (e) => {
+      if (e.flags.sigrid_biere)
+        return `Elle regarde la corne. Elle ne la prend pas.
+
+**Sigrid :** « Pas ce soir. Je veux me souvenir de tout. »
+
+Elle ne t'en veut pas. Mais elle a noté que tu bois, toi.`;
+      if (e.flags.sigrid_prudent)
+        return `**Sigrid :** « Hakon veut des rames. Il prendra n'importe qui. » Elle décroise les bras. « Je demandais si *toi*, tu venais. »
+
+Elle n'attend pas la réponse. Elle a entendu la première.`;
+      return `Elle hoche la tête, une fois. Chez elle, ça vaut un serment.
+
+**Sigrid :** « Bien. Reste près de moi là-bas. Je rame mieux quand je sais qui est à côté. »`;
+    },
+    choix: [{ texte: 'Retourner vers le feu.', suivant: 'c1_halle' }],
+  },
+  {
+    id: 'c1_halle_discours',
     decor: 'halle',
     personnages: ['hakon', 'eirik', 'sigrid', 'ulf'],
     texte: (e) => {
@@ -81,7 +250,7 @@ Tu enfiles ta tunique. Le froid entre par la porte avant toi.`;
         chasseur: `« Et le sauvage des collines ? ${e.perso.prenom}, c'est ça ? Tu sais qu'en mer il n'y a pas d'arbres pour te cacher ? »`,
       }[e.perso.origine];
       return `
-La halle sent la fumée, la bière et la laine mouillée. Tout le village tient dedans, et tout le village se tait quand Hakon se lève.
+Hakon se lève. Tout le village se tait.
 
 **Hakon :** « Six ans. Six ans qu'on enterre nos morts et qu'on compte nos moutons. Cette fois nous ne prenons pas un village. Nous prenons un château. Celui du comte Gautier, en Francie. Son or paiera dix hivers. »
 
@@ -117,6 +286,7 @@ Des rires. Pas tous francs. Hakon attend de voir ce que tu fais. Tout le monde a
     id: 'c1_halle_suite',
     decor: 'halle',
     personnages: ['hakon', 'eirik', 'sigrid', 'ulf'],
+    entree: fx.flag('c1_discours_vu'),
     texte: (e) => {
       if (e.flags.eirik_humilie)
         return `**Toi :** « Et toi, Eirik, c'est ton premier raid ou ton premier bateau ? Parce que je t'ai vu au quai hier. Tu regardais l'eau comme si elle te devait de l'argent. »
@@ -146,7 +316,7 @@ Au fond, Ulf le Borgne hoche lentement la tête. Il a compris quelque chose sur 
 
 **Hakon :** « Un banc pour ${e.perso.prenom}. On part à l'aube. »`;
     },
-    choix: [{ texte: 'Sortir prendre l\'air au port.', suivant: 'c1_port' }],
+    choix: [{ texte: 'La halle se remet à parler.', suivant: 'c1_halle' }],
   },
 
   // ------------------------------------------------- Le port, la nuit (exploration)
@@ -249,6 +419,12 @@ Il sort une outre, boit, ne te la tend pas.
         suivant: 'c1_port_ulf_suite',
       },
       {
+        texte: 'Lui tendre la corne de bière. Les présages passent mieux avec.',
+        objet: 'biere',
+        effets: fx.tous(fx.flag('ulf_promis'), fx.flag('ulf_biere_port'), fx.confiance('ulf', 2)),
+        suivant: 'c1_port_ulf_suite',
+      },
+      {
         texte: '« Les dieux ont assez de pain. »',
         effets: fx.flag('moquerie_dieux'),
         suivant: 'c1_port_ulf_suite',
@@ -286,6 +462,16 @@ Ulf a un petit rire sec, sans joie.
 **Ulf :** « C'est ce que disait Arne. Le père de Sigrid. » Il laisse la phrase tomber à l'eau et ne la repêche pas.
 
 Au-dessus, un corbeau s'envole. Tu te dis que ça ne veut rien dire. C'est exactement ce que tu te dis.`;
+      if (e.flags.ulf_biere_port)
+        return `Il prend la corne. Il boit. Il la garde.
+
+**Ulf :** « Tu sais ce qui est pire qu'un présage ? Un présage sans bière. »
+
+Il regarde les corbeaux. Puis toi.
+
+**Ulf :** « Il y a six ans, un homme a aussi offert à boire au scalde la veille d'un départ. Il voulait savoir si les dieux étaient avec nous. » Il boit. « Je lui ai dit oui. »
+
+Il ne dit pas ce qui s'est passé ensuite. Il n'a pas besoin. Au-dessus, un corbeau s'envole.`;
       return `**Ulf :** « Du pain, ça suffit. Il y en a toujours un bout qui traîne sur ce quai. » Il boit. « Ne lui donne pas ce que tu ne peux pas te permettre de perdre. Les jeunes font ça. Ils croient que les dieux pèsent. »
 
 Il désigne du menton le bout du quai, là où l'eau est la plus noire.
@@ -409,6 +595,12 @@ Il en lance un autre. Il regarde l'eau un peu trop fixement pour quelqu'un qui n
         suivant: 'c1_port_eirik_suite',
       },
       {
+        texte: 'Lui tendre la corne de bière, sans un mot.',
+        objet: 'biere',
+        effets: fx.tous(fx.flag('eirik_biere'), fx.confiance('eirik', 1)),
+        suivant: 'c1_port_eirik_suite',
+      },
+      {
         texte: '« Attention à ne pas tomber. Elle est froide. »',
         effets: fx.tous(fx.flag('eirik_eau'), fx.confiance('eirik', -1)),
         suivant: 'c1_port_eirik_suite',
@@ -420,6 +612,18 @@ Il en lance un autre. Il regarde l'eau un peu trop fixement pour quelqu'un qui n
     decor: 'port',
     personnages: ['eirik'],
     texte: (e) => {
+      if (e.flags.eirik_biere)
+        return `Il regarde la corne, puis toi. Il cherche le piège. Il ne le trouve pas, et ça l'agace.
+
+**Eirik :** « Tu l'as prise à la halle. Sous le nez de mon père. »
+
+**Toi :** « Il regardait ailleurs. »
+
+Il boit. Il fait la grimace : la bière de Hakon est mauvaise, tout le monde le sait, personne ne le dit.
+
+**Eirik :** « Elle est infecte. » Il boit encore. « Merci. »
+
+Il ne te rend pas la corne. C'est sa façon de la garder, et toi avec.`;
       if (e.flags.eirik_excuse)
         return `Il ne s'y attendait pas. Il cherche le piège, ne le trouve pas, et ça le désarme plus que n'importe quelle insulte.
 

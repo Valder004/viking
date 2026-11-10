@@ -124,6 +124,12 @@ export function hutte() {
       <rect x="0" y="318" width="800" height="5" fill="#150e09"/>
       ${Array.from({ length: 40 }, (_, i) => `<path d="M${(i * 97) % 800} ${330 + ((i * 41) % 110)} l${8 + (i % 4) * 4} ${i % 2 ? -2 : 2}" stroke="#6b5a3a" stroke-width="1.4" opacity="0.5"/>`).join('')}
 
+      <!-- porte -->
+      <rect x="748" y="82" width="60" height="240" fill="#1a110a"/>
+      <rect x="752" y="86" width="52" height="236" fill="#2a1c12"/>
+      <path d="M778 86 L778 322 M752 130 L804 130 M752 230 L804 230" stroke="#150e09" stroke-width="3"/>
+      <circle cx="762" cy="208" r="4" fill="#8e949a"/>
+      <path d="M752 86 L804 86 L804 322 L752 322 Z" fill="#9fb4cc" opacity="0.06"/>
       <!-- couche et fourrures -->
       <rect x="566" y="290" width="250" height="44" fill="#33220f"/>
       <rect x="560" y="262" width="13" height="76" fill="#2a1c12"/><path d="M560 262 q6.5 -14 13 0 Z" fill="#2a1c12"/>

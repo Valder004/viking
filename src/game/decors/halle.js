@@ -1,6 +1,6 @@
 // La grande halle du jarl, vue dans l'axe : charpente fuyante, piliers sculptés, torches,
 // tenture au drakkar derrière le siège haut, long foyer central, foule sur les bancs.
-import { SVG, halo, vignette, feu, braises, proue } from './elements.js';
+import { SVG, halo, vignette, feu, braises, proue, tonneau } from './elements.js';
 
 export function halle() {
   // Fermes de charpente, de la plus proche à la plus lointaine
@@ -117,6 +117,9 @@ export function halle() {
       ${feu(366, 346, 0.5)}${feu(402, 344, 0.62)}${feu(438, 346, 0.5)}
       ${braises(400, 300, 9, 110)}
 
+      <!-- tonneau de bière -->
+      ${tonneau(668, 372, 1.25)}
+      <path d="M682 346 l14 -4" stroke="#b9a37a" stroke-width="2"/><path d="M696 342 q3 -3 3 -8" stroke="#1a110a" stroke-width="2.500" fill="none"/>
       <!-- piliers proches -->
       ${pilier(60, -10, 460, 56, 1)}${pilier(740, -10, 460, 56, -1)}
       <ellipse class="anim-brume" cx="400" cy="46" rx="460" ry="46" fill="#6b5a4a" opacity="0.16"/>

@@ -20,6 +20,7 @@ export function port(etat, nbPnj = 0) {
   const f = etat?.flags ?? {};
   // Trois corbeaux tant qu'Ulf n'a pas parlé, deux ensuite, plus aucun à l'aube.
   const nbCorbeaux = scene === 'c1_aube' || !scene.startsWith('c1_') ? 0 : f.c1_ulf_vu ? 2 : 3;
+  void nuit; // (les corbeaux restent visibles de nuit : la lune les découpe)
   // Le chien reste près des caisses tant qu'on ne l'a pas chassé ; à l'aube, il ne revient que nourri.
   const avecChien = scene === 'c1_aube' ? Boolean(f.chien_nourri) : scene.startsWith('c1_') && !f.chien_chasse;
 

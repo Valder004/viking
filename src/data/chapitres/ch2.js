@@ -141,13 +141,184 @@ Ulf te regarde. Il n'a pas l'air surpris.`;
     choix: [{ texte: 'Le soir tombe. Hakon fait accoster sur un îlot.', suivant: 'c2_ilot' }],
   },
 
-  // ------------------------------------------------------------------- L'îlot
+  // ------------------------------------------------------- L'îlot (exploration)
   {
     id: 'c2_ilot',
+    type: 'lieu',
+    decor: 'ilot',
+    titre: 'L’îlot, la nuit',
+    arrivee: 'Un caillou avec une plage, pas plus. Mais un feu sur un caillou vaut mieux que pas de feu sur l’eau. Le drakkar est tiré sur les galets. Les autres s’installent.',
+    sol: { y: 430, xmin: 40, xmax: 760 },
+    depart: 560,
+    quetes: [
+      { texte: 'S’asseoir au feu avec les autres', fait: si.flag('c2_feu_vu') },
+      { texte: 'Regarder le drakkar de près', fait: si.flag('c2_drakkar_vu'), facultatif: true },
+      { texte: 'Dormir', visible: si.flag('c2_feu_vu'), fait: () => false },
+    ],
+    elements: [
+      {
+        id: 'drakkar', type: 'zone', x: 180, y: 232, l: 240, h: 90, nom: 'Le drakkar, tiré sur les galets',
+        action: (e) => ({
+          examiner: e.perso.origine === 'forgeron' && !e.flags.gouvernail_verifie
+            ? 'Tu passes la main sur la coque. Le gouvernail a du jeu : par gros temps, la barre répondra une seconde trop tard. Tu cales la fixation avec un coin de bois. Personne ne t’a rien demandé.'
+            : e.perso.origine === 'pecheur'
+              ? 'La coque est saine. Mais la houle qui lèche les galets vient du sud-ouest, longue et grasse, et le vent dit le contraire. Ton père appelait ça « la mer qui ment ».'
+              : 'Un bon bateau. Il sent le goudron et le sel. Dans le noir, la tête de dragon à la proue a l’air de surveiller la mer.',
+          effets: (x) => {
+            x.flags.c2_drakkar_vu = true;
+            if (x.perso.origine === 'forgeron' && !x.flags.gouvernail_verifie) { x.flags.gouvernail_verifie = true; x.reputation = Math.min(5, x.reputation + 1); }
+            if (x.perso.origine === 'pecheur') x.flags.tempete_prevue = true;
+          },
+        }),
+      },
+      {
+        id: 'poisson', type: 'objet', objet: 'poisson', x: 330, y: 262, nom: 'Le poisson sur la broche',
+        visible: si.pasFlag('c2_feu_vu'),
+        action: { prendre: 'poisson', texte: 'Tu en décroches un avant que les autres ne s’en aperçoivent. Il te brûle les doigts. Tu le gardes.' },
+      },
+      {
+        id: 'feu', type: 'zone', x: 330, y: 322, l: 140, h: 80, nom: 'Le feu',
+        important: si.pasFlag('c2_feu_vu'),
+        action: (e) => (e.flags.c2_feu_vu ? { examiner: 'Les braises. Quelqu’un a remis une bûche. Les histoires sont finies.' } : { scene: 'c2_ilot_feu' }),
+      },
+      { id: 'ulf', type: 'pnj', perso: 'ulf', x: 118, miroir: true, nom: 'Ulf le Borgne',
+        action: (e) => ({ examiner: e.flags.c2_feu_vu ? 'Ulf regarde les étoiles. Il compte quelque chose, encore.' : 'Ulf attend que tout le monde soit assis. Il ne commence jamais une histoire debout.' }) },
+      { id: 'hakon', type: 'pnj', perso: 'hakon', x: 232, miroir: true, nom: 'Hakon',
+        action: (e) => (e.flags.c2_hakon_vu
+          ? { examiner: 'Hakon a fini de parler. Il regarde la mer comme un homme regarde une terre qu’il n’a pas encore.' }
+          : { scene: 'c2_ilot_hakon' }) },
+      { id: 'sigrid', type: 'pnj', perso: 'sigrid', x: 470, nom: 'Sigrid',
+        action: (e) => ({ examiner: e.flags.couteau_repare ? 'Sigrid aiguise le couteau réparé. Le geste est devenu une prière.' : 'Sigrid aiguise sa lame. Le même geste, cent fois.' }) },
+      {
+        id: 'eirik', type: 'pnj', perso: 'eirik', x: 690, nom: 'Eirik',
+        visible: si.vivant('eirik'),
+        important: (e) => !e.flags.c2_eirik_vu && e.confiance.eirik >= 1,
+        action: (e) => (e.flags.c2_eirik_vu
+          ? { examiner: 'Eirik reste loin de l’eau. De deux pas. Sans s’en rendre compte.' }
+          : { scene: 'c2_ilot_eirik' }),
+      },
+      {
+        id: 'sortie', type: 'sortie', x: 756, nom: 'Dormir',
+        action: { suivant: 'c2_tempete', condition: si.flag('c2_feu_vu'), refus: 'Pas encore. Il y a un feu, des gens autour, et c’est la coutume de dire pourquoi on part. On dort après.' },
+      },
+    ],
+  },
+  {
+    id: 'c2_ilot_hakon',
+    decor: 'ilot',
+    personnages: ['hakon'],
+    entree: fx.flag('c2_hakon_vu'),
+    texte: `
+Hakon est assis un peu à l'écart, le dos contre la coque. Il ne t'invite pas. Il ne te chasse pas non plus.
+
+**Hakon :** « Tu rames bien. Pas assez pour que je m'en souvienne. »
+
+Il attend. Un jarl ne pose pas de questions ; il laisse des silences.`,
+    choix: [
+      { texte: '« Combien d’hommes garde le château ? »', effets: fx.tous(fx.flag('hakon_plan'), fx.reputation(1)), suivant: 'c2_ilot_hakon_suite' },
+      { texte: '« Eirik a eu peur, à la rame. Il tiendra. »', effets: fx.tous(fx.flag('hakon_eirik'), fx.reputation(-1), fx.confiance('eirik', 1)), suivant: 'c2_ilot_hakon_suite' },
+      { texte: 'Lui tendre le poisson grillé.', objet: 'poisson', effets: fx.tous(fx.flag('hakon_poisson'), fx.reputation(1)), suivant: 'c2_ilot_hakon_suite' },
+      { texte: 'Ne rien dire. Il n’attend pas de réponse.', suivant: 'c2_ilot' },
+    ],
+  },
+  {
+    id: 'c2_ilot_hakon_suite',
+    decor: 'ilot',
+    personnages: ['hakon'],
+    texte: (e) => {
+      if (e.flags.hakon_plan)
+        return `**Hakon :** « Trop. » Il a presque souri. « C'est pour ça qu'on n'entre pas par la porte. »
+
+Il n'en dira pas plus. Mais il t'a regardé·e, cette fois, et il a vu quelqu'un qui pense au château avant d'y être. Dans sa tête, ça vaut une rame de plus.`;
+      if (e.flags.hakon_eirik)
+        return `Son visage ne bouge pas. C'est ce qu'il a de plus effrayant.
+
+**Hakon :** « Je ne t'ai pas demandé ce que mon fils vaut. »
+
+Un temps.
+
+**Hakon :** « Mais tu es le premier à le dire sans rire. » Il regarde le feu, là où Eirik est assis. « Garde ça pour toi. »
+
+Il ne t'aime pas davantage. Eirik, lui, t'a vu parler à son père, et il n'a pas vu son père se fâcher. Il en tirera ses conclusions.`;
+      return `Il prend le poisson, l'inspecte comme un butin, et mord dedans.
+
+**Hakon :** « Tu voles sur la broche de ton jarl et tu viens lui offrir sa part. » Il mâche. « C'est exactement ce qu'il faut. »
+
+Tu ne sais pas si c'est un compliment. Avec lui, ça ne l'est jamais tout à fait.`;
+    },
+    choix: [{ texte: 'Retourner vers le feu.', suivant: 'c2_ilot' }],
+  },
+  {
+    id: 'c2_ilot_eirik',
+    decor: 'ilot',
+    personnages: ['eirik'],
+    entree: fx.flag('c2_eirik_vu'),
+    texte: (e) => `
+Eirik est au bord de l'eau. Pas tout à fait : à deux pas. Il regarde les vagues lécher les galets comme on regarde un chien qu'on ne connaît pas.
+
+${e.confiance.eirik >= 1
+  ? `**Eirik :** « ${e.perso.prenom}. » Il ne se retourne pas. « Tu sais garder quelque chose pour toi ? »`
+  : `**Eirik :** « Quoi ? » Il s'écarte encore d'un pas de l'eau. « Je réfléchis. Ça ne se voit pas, mais ça m'arrive. »`}`,
+    choix: [
+      {
+        texte: '« Oui. »',
+        condition: si.confiance('eirik', 1),
+        effets: fx.tous(fx.flag('eirik_nage_pas'), fx.confiance('eirik', 1)),
+        suivant: 'c2_ilot_eirik_suite',
+      },
+      {
+        texte: 'Lui tendre le poisson grillé.',
+        objet: 'poisson',
+        effets: fx.tous(fx.flag('eirik_poisson'), fx.confiance('eirik', 1)),
+        suivant: 'c2_ilot_eirik_suite',
+      },
+      {
+        texte: '« L’eau ne mord pas, tu sais. »',
+        effets: fx.tous(fx.flag('eirik_moque_eau'), fx.confiance('eirik', -1)),
+        suivant: 'c2_ilot_eirik_suite',
+      },
+      { texte: 'Le laisser réfléchir.', suivant: 'c2_ilot' },
+    ],
+  },
+  {
+    id: 'c2_ilot_eirik_suite',
+    decor: 'ilot',
+    personnages: ['eirik'],
+    texte: (e) => {
+      if (e.flags.eirik_nage_pas)
+        return `**Eirik :** « Je ne sais pas nager. »
+
+Il l'a dit à la mer, pas à toi. Comme si c'était elle qu'il fallait prévenir.
+
+**Eirik :** « Fils de jarl, né sur un fjord. Personne ne le sait. Mon père croit que je nage comme un phoque. » Il rit, pas drôle. « Si je tombe, je coule. C'est tout. »
+
+Tu promets de garder ça. Il te croit à moitié, mais c'est déjà une moitié de plus qu'avec n'importe qui d'autre ici.`;
+      if (e.flags.eirik_poisson)
+        return `Il regarde le poisson, puis toi, puis le poisson.
+
+**Eirik :** « Tu l'as volé sur la broche. »
+
+**Toi :** « Oui. »
+
+**Eirik :** « Bien. » Il le prend. « Je commençais à croire que tu étais honnête. Ça m'inquiétait. »
+
+Il mange en regardant l'eau. Il a l'air un peu moins seul. Un peu.`;
+      return `**Eirik :** « Je sais. »
+
+Il l'a dit trop vite, et trop fort. Il s'éloigne de l'eau, cette fois franchement, et va s'asseoir de l'autre côté du feu, là où on ne la voit pas.
+
+Tu as touché quelque chose. Tu ne sais pas encore quoi, et lui ne te le dira plus.`;
+    },
+    choix: [{ texte: 'Retourner vers le feu.', suivant: 'c2_ilot' }],
+  },
+
+  // ------------------------------------------------------------- Au feu
+  {
+    id: 'c2_ilot_feu',
     decor: 'ilot',
     personnages: ['sigrid', 'ulf', 'eirik', 'hakon'],
     texte: `
-Un caillou avec une plage, pas plus. Mais un feu sur un caillou vaut mieux que pas de feu sur l'eau. Le poisson grille, la bière tourne, et pour la première fois depuis le départ, les gens parlent.
+Le poisson grille, la bière tourne, et pour la première fois depuis le départ, les gens parlent.
 
 **Hakon :** « Chacun dit pourquoi il est là. C'est la coutume. Moi, c'est simple : je veux que dans cent ans, on dise encore mon nom. »
 
@@ -171,6 +342,7 @@ Personne ne comprend. Ulf n'explique pas. Les braises craquent. C'est ton tour.`
       },
       {
         texte: 'Demander à Eirik ce qu\'il veut prouver, et à qui.',
+        condition: si.vivant('eirik'),
         effets: fx.tous(fx.flag('ilot_eirik'), fx.confiance('eirik', 1)),
         suivant: 'c2_ilot_suite',
       },
@@ -190,6 +362,7 @@ Personne ne comprend. Ulf n'explique pas. Les braises craquent. C'est ton tour.`
     id: 'c2_ilot_suite',
     decor: 'ilot',
     personnages: ['sigrid', 'ulf', 'eirik', 'hakon'],
+    entree: fx.flag('c2_feu_vu'),
     texte: (e) => {
       if (e.flags.ulf_indice)
         return `Ulf ne répond pas tout de suite. Hakon, de l'autre côté du feu, cesse de mâcher.
@@ -210,11 +383,7 @@ Ulf se tait. Mais tu as vu son œil, dans la lumière, et tu as vu celui de Hako
 
 Hakon ne bouge pas d'un cil. Tu te demandes s'il a entendu. Puis tu comprends qu'il a entendu, et que c'est précisément pour ça qu'il ne bouge pas.
 
-Plus tard, quand les autres dorment, Eirik vient s'asseoir près de toi.
-
-**Eirik :** « ${e.perso.prenom}. Je ne sais pas nager. » Il regarde la mer. « Personne ne le sait. Garde ça. »
-
-Tu promets. Il ne te croit qu'à moitié, mais c'est déjà une moitié de plus qu'avec n'importe qui d'autre ici.`;
+Eirik se lève et va vers l'eau. Pas tout à fait jusqu'à l'eau. Si tu veux lui parler, c'est maintenant.`;
       if (e.flags.ilot_or)
         return `Hakon éclate de rire.
 
@@ -227,7 +396,7 @@ Il te tape sur l'épaule, fort. Sigrid te regarde comme si elle te découvrait, 
 
 Hakon grogne quelque chose sur les rameurs qui philosophent. Mais les dieux, s'ils écoutaient, ont entendu quelqu'un dire une chose vraie à un feu de camp, et les dieux aiment ça plus qu'on ne croit.`;
     },
-    choix: [{ texte: 'Dormir. Demain, la pleine mer.', suivant: 'c2_tempete' }],
+    choix: [{ texte: 'Le feu baisse. Chacun retourne à ses affaires.', suivant: 'c2_ilot' }],
   },
 
   // ------------------------------------------------------------------ La tempête
