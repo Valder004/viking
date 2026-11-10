@@ -1,0 +1,26 @@
+---
+import '../styles/global.css';
+import '../styles/jeu.css';
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Survivrais-tu au raid ? Un jeu narratif viking à choix multiples." />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#15130f" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Survivrais-tu au raid ?</title>
+  </head>
+  <body class="corps-jeu">
+    <div id="app" class="app">
+      <noscript><p class="container">Ce jeu a besoin de JavaScript. Les dieux n'y peuvent rien.</p></noscript>
+    </div>
+    <script>
+      import { demarrerJeu } from '../game/main.js';
+      demarrerJeu(document.getElementById('app'));
+    </script>
+  </body>
+</html>
