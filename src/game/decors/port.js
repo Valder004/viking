@@ -47,15 +47,18 @@ export function port(etat, nbPnj = 0) {
       <rect width="800" height="450" fill="url(#p-ciel)"/>
       ${nuit ? etoiles(80, 200) : `${nuage(180, 90, 1.1, '#f6dcc0', 0.5)}${nuage(600, 60, 0.8, '#f6dcc0', 0.4)}${nuage(430, 130, 0.6, '#fff', 0.3)}`}
       ${nuit
-        ? `<circle cx="640" cy="72" r="90" fill="url(#p-astre)"/><circle cx="640" cy="72" r="22" fill="#eef1f6"/><circle cx="632" cy="66" r="5" fill="#cfd6e2" opacity="0.6"/><circle cx="647" cy="80" r="3.500" fill="#cfd6e2" opacity="0.6"/>`
-        : `<circle cx="560" cy="232" r="170" fill="url(#p-astre)"/><circle cx="560" cy="236" r="26" fill="#fff0cf"/>`}
+        ? `<circle cx="384" cy="40" r="110" fill="url(#p-astre)"/><circle cx="384" cy="40" r="30" fill="#eef1f6"/><circle cx="374" cy="32" r="6" fill="#cfd6e2" opacity="0.6"/><circle cx="394" cy="52" r="4.500" fill="#cfd6e2" opacity="0.6"/>`
+        : `<circle cx="560" cy="190" r="170" fill="url(#p-astre)"/><circle cx="560" cy="194" r="26" fill="#fff0cf"/>`}
 
       <!-- montagnes -->
+      <g transform="translate(0 -34)">
       <path d="M0 250 L70 168 L130 214 L210 120 L290 208 L350 160 L430 236 L500 176 L570 232 L650 150 L730 222 L800 180 L800 300 L0 300 Z" fill="${nuit ? '#1b2740' : '#7c8da3'}"/>
       <path d="M210 120 L236 150 L218 146 L204 158 L190 144 Z M650 150 L676 180 L656 174 L640 186 L630 172 Z M70 168 L88 190 L72 186 L58 196 Z M350 160 L366 180 L350 176 L338 184 Z M500 176 L514 194 L500 190 L488 198 Z" fill="${nuit ? '#aab6cc' : '#fff'}" opacity="${nuit ? 0.6 : 0.9}"/>
       <path d="M0 290 L90 222 L190 268 L300 214 L420 280 L540 232 L660 284 L800 240 L800 310 L0 310 Z" fill="${nuit ? '#111a2c' : '#566579'}"/>
       <rect x="0" y="236" width="800" height="60" fill="${nuit ? '#2a3a58' : '#e9dccb'}" opacity="0.22"/>
 
+      </g>
+      <g transform="translate(0 -56)">
       <!-- la rive et le village -->
       <path d="M0 246 Q120 226 240 244 Q320 256 372 288 L0 292 Z" fill="${terre}"/>
       ${sapins(6, 330, 250, 36, nuit ? '#080c12' : '#1e2a2c', 12)}
@@ -65,11 +68,12 @@ export function port(etat, nbPnj = 0) {
 
       <!-- la mer -->
       <rect x="0" y="286" width="800" height="170" fill="url(#p-mer)"/>
-      ${Array.from({ length: 9 }, (_, i) => `<rect class="anim-lueur" x="${(nuit ? 640 : 560) - 40 + i * 4}" y="${292 + i * 6}" width="${80 - i * 8}" height="2" rx="1" fill="${nuit ? '#dfe8ff' : '#fff0cf'}" opacity="${0.5 - i * 0.04}"/>`).join('')}
+      ${Array.from({ length: 9 }, (_, i) => `<rect class="anim-lueur" x="${(nuit ? 384 : 560) - 40 + i * 4}" y="${292 + i * 6}" width="${80 - i * 8}" height="2" rx="1" fill="${nuit ? '#dfe8ff' : '#fff0cf'}" opacity="${0.5 - i * 0.04}"/>`).join('')}
       ${vagues(298, 'anim-vague', '#ffffff', 0.07)}
       ${ecume(304, 'anim-vague anim-vague--2', 0.3)}
 
       <!-- le drakkar -->
+      <g transform="translate(-100 0)">
       <ellipse cx="430" cy="350" rx="290" ry="12" fill="#000" opacity="0.3"/>
       <path d="M156 298 C138 250 148 212 172 204 C186 200 194 212 186 220 C180 226 172 222 175 215" stroke="${bois}" stroke-width="9" fill="none" stroke-linecap="round"/>
       ${proue(704, 292, 0.72, bois, true)}
@@ -79,13 +83,14 @@ export function port(etat, nbPnj = 0) {
       <rect x="344" y="100" width="172" height="15" rx="7" fill="${nuit ? '#5a4636' : '#a8402a'}"/>
       <path d="M344 108 Q430 118 516 108" stroke="rgba(0,0,0,0.25)" stroke-width="2" fill="none"/>
       ${[362, 396, 430, 464, 498].map((x) => `<path d="M${x} 99 l0 17" stroke="#e9dfc8" stroke-width="2"/>`).join('')}
-      ${[corbeau(384, 92, 1.1), corbeau(408, 92, 1.1, 'anim-oiseau anim-oiseau--2'), corbeau(474, 92, 1.1, 'anim-oiseau anim-oiseau--3')].slice(0, nbCorbeaux).join('')}
+      ${[corbeau(456, 90, 1.5), corbeau(482, 90, 1.5, 'anim-oiseau anim-oiseau--2'), corbeau(508, 90, 1.5, 'anim-oiseau anim-oiseau--3')].slice(0, nbCorbeaux).join('')}
       ${boucliers}
       <path d="M150 292 Q430 346 710 286 L698 304 Q430 384 164 310 Z" fill="${bois}"/>
       <path d="M150 292 Q430 346 710 286" stroke="rgba(255,220,170,0.25)" stroke-width="2.500" fill="none"/>
       <path d="M156 301 Q430 358 704 296 M162 308 Q430 370 700 302" stroke="rgba(0,0,0,0.4)" stroke-width="1.4" fill="none"/>
       ${Array.from({ length: 22 }, (_, i) => { const p = bord(0.05 + i * 0.042); return `<circle cx="${p.x.toFixed(1)}" cy="${(p.y + 13).toFixed(1)}" r="1" fill="#8e949a" opacity="0.7"/>`; }).join('')}
-      <path d="M690 300 Q730 330 756 300" stroke="#b9a37a" stroke-width="2.500" fill="none"/>
+      <path d="M690 300 Q790 340 868 300" stroke="#b9a37a" stroke-width="2.500" fill="none"/>
+      </g>
 
       <!-- brume sur l'eau -->
       <ellipse class="anim-brume" cx="260" cy="316" rx="380" ry="20" fill="#dfe6ec" opacity="${nuit ? 0.16 : 0.4}"/>
@@ -93,8 +98,8 @@ export function port(etat, nbPnj = 0) {
       ${nuit ? '' : `${mouette(250, 120, 1)}${mouette(292, 138, 0.7, 'anim-oiseau anim-oiseau--2')}${mouette(610, 96, 0.8, 'anim-oiseau anim-oiseau--3')}`}
 
       <!-- le quai -->
-      <path d="M0 346 L800 346 L800 460 L0 460 Z" fill="${nuit ? '#1a130d' : '#33271c'}"/>
-      ${Array.from({ length: 19 }, (_, i) => { const x = -230 + i * 70; return `<path d="M${x} 460 L${400 + (x - 400) * 0.62} 346" stroke="rgba(0,0,0,0.4)" stroke-width="1.5"/>`; }).join('')}
+      <path d="M0 346 L800 346 L800 530 L0 530 Z" fill="${nuit ? '#1a130d' : '#33271c'}"/>
+      ${Array.from({ length: 23 }, (_, i) => { const x = -380 + i * 70; return `<path d="M${x} 530 L${400 + (x - 400) * 0.5} 346" stroke="rgba(0,0,0,0.4)" stroke-width="1.5"/>`; }).join('')}
       <rect x="0" y="344" width="800" height="5" fill="${nuit ? '#3a2c20' : '#5a4634'}"/>
       ${[[30, 1], [770, 1]].map(([x]) => `<rect x="${x - 11}" y="258" width="22" height="100" fill="${boisSombre}"/><rect x="${x}" y="258" width="11" height="100" fill="rgba(0,0,0,0.3)"/><rect x="${x - 14}" y="252" width="28" height="9" rx="2" fill="${bois}"/>
         <path d="M${x - 13} 300 q13 7 26 0 M${x - 13} 307 q13 7 26 0 M${x - 13} 314 q13 7 26 0" stroke="#b9a37a" stroke-width="3" fill="none"/>`).join('')}
@@ -108,6 +113,7 @@ export function port(etat, nbPnj = 0) {
       ${tonneau(108, 350, 1.15)}${caisse(162, 350, 1.05)}${caisse(150, 316, 0.8)}${tonneau(726, 350, 0.95)}
       <ellipse cx="220" cy="352" rx="24" ry="7" fill="none" stroke="#b9a37a" stroke-width="4"/><ellipse cx="220" cy="349" rx="17" ry="5" fill="none" stroke="#b9a37a" stroke-width="4"/>
       ${avecChien ? chien(196, 317) : ''}
+      </g>
 
       <!--persos-->
       <g pointer-events="none">${flocons}</g>

@@ -19,14 +19,14 @@ export function halle() {
     <path d="M${x - w * 0.75} ${y1} L${x + w * 0.75} ${y1} L${x + w / 2} ${y1 + w * 0.6} L${x - w / 2} ${y1 + w * 0.6} Z" fill="#2c1c10"/>
     ${Array.from({ length: 6 }, (_, i) => {
       const y = y1 + w * 1.2 + i * w * 1.1;
-      return y + w < y2 ? `<path d="M${x - w * 0.3} ${y} Q${x} ${y - w * 0.45} ${x + w * 0.3} ${y} Q${x} ${y + w * 0.45} ${x - w * 0.3} ${y} Z" fill="none" stroke="#6b4a2a" stroke-width="${Math.max(1, w * 0.07)}"/><circle cx="${x}" cy="${y}" r="${w * 0.07}" fill="#6b4a2a"/>` : '';
+      return y + w < y2 ? `<path d="M${x} ${y - w * 0.5} L${x + w * 0.3} ${y} L${x} ${y + w * 0.5} L${x - w * 0.3} ${y} Z M${x - w * 0.3} ${y - w * 0.5} L${x + w * 0.3} ${y + w * 0.5} M${x + w * 0.3} ${y - w * 0.5} L${x - w * 0.3} ${y + w * 0.5}" fill="none" stroke="#6b4a2a" stroke-width="${Math.max(1, w * 0.06)}" stroke-linejoin="round"/>` : '';
     }).join('')}`;
 
-  const torche = (x, y, s) => `
-    <path d="M${x} ${y} l${14 * s} ${-10 * s}" stroke="#1a110a" stroke-width="${4 * s}" stroke-linecap="round"/>
-    <rect x="${x + 10 * s}" y="${y - 22 * s}" width="${8 * s}" height="${14 * s}" fill="#2a1c12"/>
-    <circle cx="${x + 14 * s}" cy="${y - 30 * s}" r="${46 * s}" fill="url(#g-torche)" class="anim-lueur"/>
-    ${feu(x + 14 * s, y - 20 * s, 0.34 * s)}`;
+  const torche = (x, y, d) => `
+    <path d="M${x} ${y} l${14 * d} -10" stroke="#1a110a" stroke-width="4" stroke-linecap="round"/>
+    <rect x="${x + 14 * d - 4}" y="${y - 22}" width="8" height="14" fill="#2a1c12"/>
+    <circle cx="${x + 14 * d}" cy="${y - 30}" r="46" fill="url(#g-torche)" class="anim-lueur"/>
+    ${feu(x + 14 * d, y - 20, 0.34)}`;
 
   // Convives : silhouettes éclairées par le feu, côté intérieur
   const convive = (x, y, s, sens, variante) => `
@@ -102,7 +102,7 @@ export function halle() {
       <path d="M682 336 L538 286 L524 290 L650 348 Z" fill="#4a3020"/><path d="M682 336 L538 286 L537 289 L680 340 Z" fill="rgba(255,170,90,0.25)"/>
       ${[[150, 330], [186, 317], [220, 305], [246, 296], [650, 330], [614, 317], [580, 305], [554, 296]].map(([x, y], i) => `<path d="M${x - 3} ${y} l1 -9 l5 0 l1 9 Z" fill="${i % 2 ? '#d6a640' : '#c9bfa8'}"/>`).join('')}
       ${pilier(206, 26, 352, 28, 1)}${pilier(594, 26, 352, 28, -1)}
-      ${torche(220, 170, 1)}${torche(566, 170, 1).replace(/l14 -10/, 'l14 -10')}
+      ${torche(220, 170, 1)}${torche(580, 170, -1)}
 
       <!-- sol -->
       <path d="M0 430 L250 306 L550 306 L800 430 L800 460 L0 460 Z" fill="#24160c"/>

@@ -36,14 +36,16 @@ export function nuage(x, y, s = 1, fill = '#fff', op = 0.6) {
 }
 
 export function mouette(x, y, s = 1, cls = 'anim-oiseau') {
-  return `<path class="${cls}" transform="translate(${x} ${y}) scale(${s})" d="M-12 0 Q-6 -8 0 0 Q6 -8 12 0" fill="none" stroke="#f4efe6" stroke-width="2" stroke-linecap="round"/>`;
+  // La position est sur le groupe, l'animation sur l'enfant : une animation CSS de
+  // transform écraserait sinon l'attribut transform du SVG.
+  return `<g transform="translate(${x} ${y}) scale(${s})"><path class="${cls}" d="M-12 0 Q-6 -8 0 0 Q6 -8 12 0" fill="none" stroke="#f4efe6" stroke-width="2" stroke-linecap="round"/></g>`;
 }
 
 export function corbeau(x, y, s = 1, cls = 'anim-oiseau') {
-  return `<g class="${cls}" transform="translate(${x} ${y}) scale(${s})" fill="#0b0907">
-    <path d="M-9 0 Q-10 -9 -2 -11 Q4 -12 6 -7 L12 -6 L6 -4 Q8 4 0 6 L-12 8 Z"/>
+  return `<g transform="translate(${x} ${y}) scale(${s})"><g class="${cls}" fill="#0b0907">
+    <path d="M-9 0 Q-10 -9 -2 -11 Q4 -12 6 -7 L12 -6 L6 -4 Q8 4 0 6 L-12 8 Z" stroke="#7d8cb0" stroke-width="1" stroke-opacity="0.7"/>
     <path d="M-4 6 L-4 11 M1 6 L1 11" stroke="#0b0907" stroke-width="1.2"/>
-    <circle cx="3" cy="-8" r="0.9" fill="#d8d2c6"/></g>`;
+    <circle cx="3" cy="-8" r="0.9" fill="#d8d2c6"/></g></g>`;
 }
 
 export function sapin(x, y, h, fill) {

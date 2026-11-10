@@ -15,18 +15,18 @@ export function hutte() {
   const flocons = Array.from({ length: 22 }, (_, i) =>
     `<circle class="anim-neige ${i % 2 ? 'anim-neige--2' : ''}" cx="${642 + ((i * 37) % 126)}" cy="${-300 + ((i * 53) % 300)}" r="${1.2 + (i % 3) * 0.6}" fill="#fff" opacity="0.85"/>`).join('');
 
-  const poissons = [276, 300, 324, 348].map((x, i) =>
+  const poissons = [408, 430, 452].map((x, i) =>
     `<g transform="translate(${x} ${50 - i * 0.4})"><path d="M0 0 L0 10" stroke="#cbb994" stroke-width="1"/>
       <path d="M0 10 Q8 24 0 42 Q-8 24 0 10 Z" fill="#b39c72"/><path d="M0 10 Q8 24 0 42 Z" fill="rgba(0,0,0,0.2)"/>
       <path d="M0 42 l-6 9 l12 0 Z" fill="#b39c72"/><circle cx="-2" cy="17" r="1" fill="#2a1c12"/></g>`).join('');
 
-  const herbes = [420, 452].map((x) =>
+  const herbes = [484, 512].map((x) =>
     `<g transform="translate(${x} 47)"><path d="M0 0 L0 8" stroke="#cbb994" stroke-width="1"/>
       <path d="M0 8 Q-12 22 -8 40 M0 8 Q-3 24 0 44 M0 8 Q10 22 8 40 M0 8 Q-6 22 -3 38 M0 8 Q5 22 4 42" stroke="#6f7d4a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
       <rect x="-3" y="6" width="6" height="4" fill="#8a5a3a"/></g>`).join('');
 
   const oignons = Array.from({ length: 5 }, (_, i) =>
-    `<ellipse cx="${500 + (i % 2) * 7}" cy="${58 + i * 9}" rx="6" ry="5.5" fill="#c98a4a"/><ellipse cx="${502 + (i % 2) * 7}" cy="${58 + i * 9}" rx="3" ry="5.5" fill="rgba(0,0,0,0.2)"/>`).join('');
+    `<ellipse cx="${204 + (i % 2) * 7}" cy="${62 + i * 9}" rx="6" ry="5.5" fill="#c98a4a"/><ellipse cx="${206 + (i % 2) * 7}" cy="${62 + i * 9}" rx="3" ry="5.5" fill="rgba(0,0,0,0.2)"/>`).join('');
 
   const fils = Array.from({ length: 16 }, (_, i) =>
     `<line x1="${48 + i * 6}" y1="150" x2="${48 + i * 6}" y2="302" stroke="#d8cfb8" stroke-width="1" opacity="0.7"/>`).join('');
@@ -62,7 +62,7 @@ export function hutte() {
       <rect x="538" y="26" width="24" height="294" fill="#3a2718"/><rect x="552" y="26" width="10" height="294" fill="rgba(0,0,0,0.3)"/>
 
       <!-- perche à provisions -->
-      <path d="M262 50 L548 44" stroke="#2a1c12" stroke-width="5" stroke-linecap="round"/>
+      <path d="M392 48 L548 44" stroke="#2a1c12" stroke-width="5" stroke-linecap="round"/>
       ${poissons}${herbes}${oignons}
 
       <!-- fenêtre -->
@@ -97,6 +97,7 @@ export function hutte() {
       ${poids}
 
       <!-- le bouclier du père -->
+      <g transform="translate(-76 4)">
       <path d="M352 196 L438 46" stroke="#5a4028" stroke-width="5" stroke-linecap="round"/>
       <path d="M438 46 l10 -24 l4 22 Z" fill="#8e949a"/>
       <circle cx="392" cy="122" r="43" fill="#2a1c12"/>
@@ -108,6 +109,7 @@ export function hutte() {
       </g>
       <path d="M404 84 L398 108 L410 122 L400 160" stroke="#150e09" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
       <circle cx="392" cy="122" r="9" fill="#8e949a"/><circle cx="389.5" cy="119.500" r="2.5" fill="rgba(255,255,255,0.5)"/>
+      </g>
 
       <!-- étagère -->
       <rect x="452" y="214" width="84" height="7" fill="#33220f"/>
@@ -129,24 +131,23 @@ export function hutte() {
       <path d="M690 274 Q730 270 770 276 Q790 272 816 284 L816 306 L690 306 Z" fill="#5f5340"/>
       <path d="M590 284 l4 8 M612 280 l4 9 M640 286 l3 8 M668 278 l4 9 M706 282 l3 8 M740 280 l4 9 M776 284 l3 8" stroke="rgba(0,0,0,0.3)" stroke-width="1.5"/>
 
-      <!-- foyer, trépied, chaudron -->
-      <ellipse cx="380" cy="340" rx="230" ry="60" fill="url(#h-feu)"/>
+      <!-- foyer et chaudron pendu à la charpente -->
+      <g transform="translate(-18 -44)">
+      <ellipse cx="380" cy="330" rx="260" ry="120" fill="url(#h-feu)" class="anim-lueur"/>
       <ellipse cx="380" cy="338" rx="92" ry="20" fill="#120c07"/>
       ${pierres}
-      <path d="M380 152 L390 330" stroke="#150e09" stroke-width="5" stroke-linecap="round"/>
       <path d="M330 338 L420 326 M342 326 L430 340" stroke="#3a2718" stroke-width="11" stroke-linecap="round"/>
       <circle cx="330" cy="338" r="5.5" fill="#7d5a3a"/><circle cx="430" cy="340" r="5.5" fill="#7d5a3a"/>
       <g class="anim-lueur">${feu(380, 336, 1.05)}</g>
       ${braises(380, 290, 7, 70)}
-      <path d="M380 152 L380 252" stroke="#1a1513" stroke-width="2.5" stroke-dasharray="4 3"/>
+      <path d="M380 30 L380 252" stroke="#1a1513" stroke-width="3" stroke-dasharray="5 3"/>
       <path d="M348 262 Q380 224 412 262" stroke="#1a1513" stroke-width="3" fill="none"/>
       <path d="M345 262 Q338 312 380 317 Q422 312 415 262 Z" fill="#1c1816"/>
       <path d="M380 262 L415 262 Q422 312 380 317 Z" fill="rgba(0,0,0,0.35)"/>
       <path d="M352 272 Q350 296 362 308" stroke="rgba(255,170,90,0.35)" stroke-width="3" fill="none" stroke-linecap="round"/>
       <ellipse cx="380" cy="262" rx="36" ry="7" fill="#2c2623"/><ellipse cx="380" cy="263" rx="30" ry="4.500" fill="#6b5a3a"/>
       <g fill="#d8d2c6" opacity="0.35"><circle class="anim-fumee" cx="372" cy="254" r="9"/><circle class="anim-fumee anim-fumee--2" cx="388" cy="252" r="7"/><circle class="anim-fumee anim-fumee--3" cx="380" cy="256" r="8"/></g>
-      <path d="M380 152 L302 340 M380 152 L458 340" stroke="#1f1610" stroke-width="6" stroke-linecap="round"/>
-      <circle cx="380" cy="152" r="6" fill="#33220f"/>
+      </g>
 
       <!--persos-->
       <ellipse cx="380" cy="330" rx="420" ry="230" fill="url(#h-feu)" opacity="0.35" pointer-events="none"/>

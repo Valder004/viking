@@ -12,10 +12,9 @@ const VITESSE = 16; // ms par caractère
 /** Compose le SVG du décor avec le joueur et les PNJ placés dessus. */
 export function composerDecor(scene, etat) {
   const decor = DECORS[scene.decor] ?? DECORS.vide;
-  const { svg, joueur, places } = decor(etat);
-
   const pnj = (typeof scene.personnages === 'function' ? scene.personnages(etat) : scene.personnages) ?? [];
   const presents = pnj.filter((id) => !etat.morts[id] && PERSONNAGES[id]);
+  const { svg, joueur, places } = decor(etat, presents.length);
 
   const groupe = (id, contenu, p) =>
     `<g transform="translate(${p.x} ${p.y}) scale(${p.scale})${p.miroir ? ' translate(200 0) scale(-1 1)' : ''}"><g class="perso" data-perso="${id}">${contenu}</g></g>`;
