@@ -13,12 +13,17 @@ const VITESSE = 16; // ms par caractère
 /**
  * Compose le SVG du décor avec le joueur et les PNJ placés dessus.
  * Pour un décor plus large que l'écran, scene.camera donne le bord gauche de la vue.
+ * Une scène peut aussi imposer ses propres emplacements (scene.places, scene.joueur).
  */
 export function composerDecor(scene, etat) {
   const decor = DECORS[scene.decor] ?? DECORS.vide;
   const pnj = (typeof scene.personnages === 'function' ? scene.personnages(etat) : scene.personnages) ?? [];
-  const presents = pnj.filter((id) => !etat.morts[id] && PERSONNAGES[id]);
-  const { svg, joueur, places, largeur = 800 } = decor(etat, presents.length);
+  // scene.morts : la scène montre aussi les morts (le Valhalla, par exemple).
+  const presents = pnj.filter((id) => (scene.morts || !etat.morts[id]) && PERSONNAGES[id]);
+  const d = decor(etat, presents.length);
+  const { svg, largeur = 800 } = d;
+  const joueur = scene.joueur ?? d.joueur;
+  const places = scene.places ?? d.places;
   const voulu = typeof scene.camera === 'function' ? scene.camera(etat) : scene.camera ?? 0;
   const cam = Math.max(0, Math.min(largeur - 800, voulu));
 

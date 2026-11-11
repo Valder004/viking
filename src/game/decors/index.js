@@ -9,6 +9,13 @@ import { port } from './port.js';
 import { depart, mer, tempete, brouillard } from './drakkar.js';
 import { ilot } from './ilot.js';
 import { cour } from './cour.js';
+import { plage, village, chemin } from './francie.js';
+import { monastere } from './monastere.js';
+import { camp } from './camp.js';
+import { chateauExt, souterrain, courFeu } from './chateau.js';
+import { tresor } from './tresor.js';
+import { valhalla, marche } from './fins.js';
+import { veillee, champ, barque, greve } from './retour.js';
 
 export const vide = () => ({
   svg: `<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
@@ -17,4 +24,5 @@ export const vide = () => ({
   places: [],
 });
 
-export const DECORS = { vide, hutte, halle, port, cour, depart, mer, ilot, tempete, brouillard };
+export const DECORS = { vide, hutte, halle, port, cour, plage, village, chemin, monastere, camp,
+  chateauExt, souterrain, courFeu, tresor, valhalla, marche, veillee, champ, barque, greve, depart, mer, ilot, tempete, brouillard };

@@ -9,4 +9,5 @@ export const PERSONNAGES = {
   gautier: { nom: 'Gautier', titre: 'comte franc', couleur: '#e07a90' },
   anselme: { nom: 'Frère Anselme', titre: 'moine', couleur: '#d6c6aa' },
   parent: { nom: 'Ta mère', titre: '', couleur: '#d6c6aa' },
+  vieux: { nom: 'Le vieil homme', titre: 'villageois franc', couleur: '#c9b79c' },
 };

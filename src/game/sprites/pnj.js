@@ -37,6 +37,10 @@ const FICHES = {
     carrure: 'moyenne', peau: '#e2b894', cheveux: '#8c7a5a', coiffure: 'tonsure', expression: 'triste',
     robe: '#6b5540', galon: '#4f3e2e', corde: true, age: true,
   },
+  vieux: {
+    carrure: 'fine', peau: '#d8b58f', cheveux: '#e4ded2', coiffure: 'court', barbe: 'longue', expression: 'triste',
+    tenue: '#7a6a4e', galon: '#5a4a34', pantalon: '#5a4a38', age: true, yeux: '#5a6a7a',
+  },
   parent: {
     carrure: 'fine', peau: '#e2b894', cheveux: '#8c7a6a', coiffure: 'foulard', foulard: '#c9bfa8', expression: 'triste',
     robe: '#7d8a76', galon: '#c9bfa8', tablier: '#8a5a3a', age: true,

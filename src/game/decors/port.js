@@ -2,7 +2,7 @@
 // À gauche le village et le drakkar ; puis les séchoirs à poisson, le hangar à bateaux,
 // une barque, et tout au bout la pierre levée face au large.
 // Deux ambiances (nuit / petit matin). Les corbeaux et le chien suivent l'histoire.
-import { degrade, halo, vagues, ecume, etoiles, maison, sapins, proue, tonneau, caisse, corbeau, mouette, nuage, neige } from './elements.js';
+import { degrade, halo, vagues, ecume, etoiles, maison, sapins, proue, tonneau, caisse, corbeau, mouette, nuage, neige, pluie } from './elements.js';
 
 const L = 1600;
 
@@ -25,7 +25,19 @@ export function port(etat, nbPnj = 0) {
   // Trois corbeaux tant qu'Ulf n'a pas parlé, deux ensuite, plus aucun à l'aube.
   const nbCorbeaux = scene === 'c1_aube' || !scene.startsWith('c1_') ? 0 : f.c1_ulf_vu ? 2 : 3;
   // Le chien reste près des caisses tant qu'on ne l'a pas chassé ; à l'aube, il ne revient que nourri.
-  const avecChien = scene === 'c1_aube' ? Boolean(f.chien_nourri) : scene.startsWith('c1_') && !f.chien_chasse;
+  const avecChien = scene === 'c1_aube' || scene.startsWith('c5_') ? Boolean(f.chien_nourri) : scene.startsWith('c1_') && !f.chien_chasse;
+  // Au retour (chapitre 5) : la foule du triomphe, ou la pluie du rameur.
+  const foule = scene === 'c5_fin_triomphe';
+  const averse = scene === 'c5_fin_rameur';
+  // Les villageois se tiennent au fond du quai, derrière les personnages, en habits de couleur.
+  const villageois = (i) => {
+    const x = 18 + i * 36 + (i % 3) * 5;
+    const y = 252 + (i % 2) * 10;
+    const habit = ['#6a5a42', '#4a5a6e', '#7a4a3a', '#4a5e44', '#8a7a5a'][i % 5];
+    const peau = ['#e2b894', '#d8a882', '#f0caa4'][i % 3];
+    const bras = i % 4 === 0 ? `<path d="M8 14 L18 -14 M-8 14 L-18 -12" stroke="${habit}" stroke-width="6" stroke-linecap="round"/>` : '';
+    return `<g transform="translate(${x} ${y}) scale(${0.62 + (i % 3) * 0.05})"><path d="M-15 60 Q-17 16 -6 10 L6 10 Q17 16 15 60 Z" fill="${habit}"/><path d="M4 12 Q16 18 15 60 L4 60 Z" fill="rgba(0,0,0,0.2)"/><circle cx="0" cy="-2" r="11" fill="${peau}"/>${bras}</g>`;
+  };
 
   const bois = nuit ? '#231810' : '#3a2718';
   const boisSombre = nuit ? '#150e09' : '#2a1c12';
@@ -176,8 +188,9 @@ export function port(etat, nbPnj = 0) {
       <path d="M1562 282 Q1574 270 1588 272 Q1576 276 1566 288 Z" fill="${neigeC}"/>
       </g>
 
+      ${foule ? Array.from({ length: 22 }, (_, i) => villageois(i)).join('') : ''}
       <!--persos-->
-      ${neige({ n: 180, largeur: L })}
+      ${averse ? `<rect width="${L}" height="450" fill="#3a4450" opacity="0.4"/>${pluie({ n: 160, largeur: L, eclatY: 346 })}` : foule ? '' : neige({ n: 180, largeur: L })}
     </svg>`,
     joueur: { x: 606, y: 132, scale: 1.05 },
     places: nbPnj <= 1

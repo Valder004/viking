@@ -597,18 +597,4 @@ Le brouillard se lève à midi. La côte franque est là, verte, basse, et sur l
     },
     choix: [{ texte: 'La Francie.', suivant: 'c3_debarquement' }],
   },
-
-  // Chapitre 3 pas encore écrit : écran d'attente.
-  {
-    id: 'c3_debarquement',
-    chapitre: 3,
-    decor: 'mer',
-    personnages: [],
-    aSuivre: true,
-    texte: `
-*Le chapitre 3, « La côte franque », n'est pas encore écrit.*
-
-Ta partie est sauvegardée ici, avec tes blessures, tes morts et tes dettes.`,
-    choix: [],
-  },
 ];

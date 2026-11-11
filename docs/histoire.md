@@ -170,6 +170,14 @@ Décors : remparts (nuit, torches), cour en feu (orange, cendres animées), sall
    - Si Sigrid vit : **c'est elle qui choisit**, mais tu peux peser : *demander le pardon pour Ulf* / *te taire* / *tendre ton couteau à Sigrid*.
    - `ulf_pardonne` si Sigrid pardonne. Sinon Ulf reste dans les souterrains pour tenir la porte. Il meurt en chantant. C'est le seul moment où le jeu est presque beau.
 
+**Ajouts à l'implémentation (ch.4)**
+- Quatrième route toujours ouverte : le **bélier** avec Hakon (+réputation).
+- **Salle du trésor explorable** : le comte Gautier (le tuer, laisser Aude décider, ou le garder en otage contre rançon), les coffres (la **couronne** du comte), la table du comte (une **lettre**).
+- **Le rebondissement de la lettre** : il y a six ans, c'est Hakon qui a vendu la route du raid du vieux jarl à Gautier, contre de l'argent et sa future place de jarl. Il a payé les dettes de jeu d'Ulf et lui a fait porter le rouleau au Frison. Ulf a trahi, mais Hakon a tout orchestré. Si Aude est vivante, elle lit la lettre ; sinon, on reconnaît seulement l'anneau de Hakon dans la cire.
+- **Outils face à l'arrière-garde** : offrir la couronne à Hakon (il désigne quelqu'un d'autre, souvent Ulf), ou montrer la lettre aux hommes (ils se retournent contre Hakon ; Sigrid le tue si elle vit : sa vengeance trouve enfin la bonne cible).
+- Si Ulf est mort, c'est un rameur, **Thorkel**, qui tient la herse.
+- Trois fins se jouent déjà au ch.4 : **Valhalla**, **Nourriture pour les corbeaux** (défi perdu), **Vendu** (tenir la porte).
+
 ### Chapitre 5 — Le dénouement
 Court. Une à trois scènes selon la fin. Décors : la plage franque à l'aube, le drakkar du retour, le village (le chien), la salle du comte réaménagée, le pont arc-en-ciel.
 
@@ -200,6 +208,12 @@ Résolution dans l'ordre :
 | 8 | **La saga inachevée** *(secrète)* | Douce-amère | Sigrid, Ulf, Eirik et Aude vivants ; `ulf_pardonne` ; `offrande_njord` ; `moines_epargnes` ; aucun chrono expiré | Le feu de camp du ch.2, mais au village. Ulf chante la saga du raid. Il y a une place vide pour Arne. |
 | 9 | **Nourriture pour les corbeaux** | Mort sèche | Santé 0 ou mort au combat avec faveur ≤ 0 | Le champ de bataille, trois corbeaux. Texte court, sans pathos. |
 | 10 | **Le rameur** | Ambiguë | Par défaut | Le port du village, pluie. Tu es revenu. Personne ne t'attend, personne ne te chasse. |
+
+**Ajouts à l'implémentation (ch.5)**
+- Sur la plage, à l'aube, le joueur choisit : rester comme jarl (si Hakon est mort et que quelqu'un te soutient), rester avec Aude (confiance ≥ 3), ou rentrer. Le banni n'a pas le choix.
+- En rentrant, l'ordre est : naufrage (coque fragile et faveur ≤ -1) → fin secrète → retour triomphal → le rameur.
+- **Écart avec le tableau** : le retour triomphal est aussi possible quand Hakon est mort, si le joueur a des soutiens et au moins 4 de butin. C'est alors le joueur qu'on porte sur les épaules.
+- Les fins reprennent ce qui a été semé : l'objet de la mère (rendu, gardé, sacrifié à Njörd), le chien nourri, Anselme épargné, la rançon de Gautier.
 
 Galerie des fins : silhouettes grisées pour les fins non trouvées ; la fin 8 apparaît sous un « ? » tant qu'elle n'est pas débloquée.
 

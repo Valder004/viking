@@ -15,6 +15,45 @@ export const OBJETS = {
       <path d="M29 20 l8 -7 l0 14 Z" fill="#7d8e9b"/><circle cx="10" cy="18.500" r="1.800" fill="#1a110a"/>
       <path d="M15 16 l0 8 M20 15 l0 10" stroke="rgba(0,0,0,0.3)" stroke-width="1.200"/>`,
   },
+  carte: {
+    nom: 'Plan du château',
+    description: 'Trouvé au scriptorium. Des murs, quatre tours, et un trait en pointillé qui passe sous l’un d’eux. Quelqu’un a annoté le coin en runes.',
+    icone: `<path d="M5 8 L16 5 L25 9 L35 6 L35 33 L25 36 L16 32 L5 35 Z" fill="#e3d3a8"/>
+      <path d="M16 5 L16 32 M25 9 L25 36" stroke="#b39c72" stroke-width="1"/>
+      <rect x="11" y="13" width="18" height="13" fill="none" stroke="#6b4a2e" stroke-width="1.600"/>
+      <rect x="9" y="11" width="4" height="4" fill="#6b4a2e"/><rect x="27" y="11" width="4" height="4" fill="#6b4a2e"/>
+      <rect x="9" y="24" width="4" height="4" fill="#6b4a2e"/><rect x="27" y="24" width="4" height="4" fill="#6b4a2e"/>
+      <path d="M20 26 L20 33 L30 33" stroke="#a8402a" stroke-width="1.400" stroke-dasharray="2 2" fill="none"/>`,
+  },
+  baume: {
+    nom: 'Baume des moines',
+    description: 'Un petit pot de terre, cacheté de cire. Ça sent la cire, l’ortie et quelque chose d’amer. Les moines soignent ce que les autres cassent.',
+    icone: `<path d="M11 14 Q8 30 14 35 L26 35 Q32 30 29 14 Z" fill="#a8693f"/><path d="M20 14 L29 14 Q32 30 26 35 L20 35 Z" fill="rgba(0,0,0,0.2)"/>
+      <rect x="10" y="10" width="20" height="5" rx="2" fill="#c98a4a"/><ellipse cx="20" cy="10" rx="9" ry="2.500" fill="#e6c35c"/>
+      <path d="M14 22 Q20 26 26 22" stroke="#6f8a4a" stroke-width="2" fill="none"/><path d="M18 20 l2 -4 l2 4" stroke="#6f8a4a" stroke-width="1.500" fill="none"/>`,
+  },
+  calice: {
+    nom: 'Calice d’or',
+    description: 'L’or de l’autel. Lourd pour sa taille, comme tout ce qui compte. Hakon en connaît le poids exact sans l’avoir soulevé.',
+    icone: `<path d="M9 7 L31 7 Q31 20 20 22 Q9 20 9 7 Z" fill="#d6a640"/><path d="M20 7 L31 7 Q31 20 20 22 Z" fill="rgba(0,0,0,0.18)"/>
+      <rect x="18" y="22" width="4" height="7" fill="#c9963f"/><path d="M11 33 Q20 27 29 33 Z" fill="#d6a640"/>
+      <ellipse cx="20" cy="7" rx="11" ry="2.500" fill="#f0d07a"/><circle cx="15" cy="13" r="1.600" fill="#8a1c1c"/><circle cx="20" cy="15" r="1.600" fill="#1f3a5f"/><circle cx="25" cy="13" r="1.600" fill="#8a1c1c"/>`,
+  },
+  lettre: {
+    nom: 'Lettre scellée',
+    description: 'Trouvée sur la table du comte. Une lettre vieille de six ans, en latin, scellée d’une cire où l’on reconnaît la marque d’un anneau. Celui que Hakon porte au doigt.',
+    icone: `<path d="M6 9 L34 9 L34 31 L6 31 Z" fill="#e3d3a8"/><path d="M6 9 L20 20 L34 9" stroke="#b39c72" stroke-width="1.400" fill="none"/>
+      <path d="M10 25 l10 0 M10 28 l14 0" stroke="#8a6a42" stroke-width="1"/>
+      <circle cx="26" cy="25" r="5.500" fill="#a8302a"/><circle cx="26" cy="25" r="2.600" fill="none" stroke="#6e1a14" stroke-width="1.200"/>`,
+  },
+  couronne: {
+    nom: 'Couronne du comte',
+    description: 'Un cercle d’or serti de pierres rouges, trouvé dans un coffre. Trop petit pour la tête de Hakon. Il la voudra quand même.',
+    icone: `<path d="M6 28 L8 12 L14 20 L20 8 L26 20 L32 12 L34 28 Z" fill="#d6a640"/><path d="M20 8 L26 20 L32 12 L34 28 L20 28 Z" fill="rgba(0,0,0,0.15)"/>
+      <rect x="6" y="27" width="28" height="5" rx="1" fill="#c9963f"/>
+      <circle cx="13" cy="29.500" r="1.600" fill="#a8302a"/><circle cx="20" cy="29.500" r="1.600" fill="#1f3a5f"/><circle cx="27" cy="29.500" r="1.600" fill="#a8302a"/>
+      <circle cx="20" cy="8" r="1.800" fill="#f0d07a"/>`,
+  },
   pierre: {
     nom: 'Pierre à aiguiser',
     description: 'Prise à la forge. Elle a rendu leur fil à plus de lames que le village ne compte de morts.',
