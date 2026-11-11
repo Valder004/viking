@@ -147,12 +147,14 @@ Ulf te regarde. Il n'a pas l'air surpris.`;
     type: 'lieu',
     decor: 'ilot',
     titre: 'L’îlot, la nuit',
+    largeur: 1600,
     arrivee: 'Un caillou avec une plage, pas plus. Mais un feu sur un caillou vaut mieux que pas de feu sur l’eau. Le drakkar est tiré sur les galets. Les autres s’installent.',
-    sol: { y: 430, xmin: 40, xmax: 760 },
+    sol: { y: 430, xmin: 40, xmax: 1560 },
     depart: 560,
     quetes: [
       { texte: 'S’asseoir au feu avec les autres', fait: si.flag('c2_feu_vu') },
       { texte: 'Regarder le drakkar de près', fait: si.flag('c2_drakkar_vu'), facultatif: true },
+      { texte: 'Marcher jusqu’à la pointe sud', fait: si.flag('c2_horizon_vu'), facultatif: true },
       { texte: 'Dormir', visible: si.flag('c2_feu_vu'), fait: () => false },
     ],
     elements: [
@@ -190,7 +192,7 @@ Ulf te regarde. Il n'a pas l'air surpris.`;
       { id: 'sigrid', type: 'pnj', perso: 'sigrid', x: 470, nom: 'Sigrid',
         action: (e) => ({ examiner: e.flags.couteau_repare ? 'Sigrid aiguise le couteau réparé. Le geste est devenu une prière.' : 'Sigrid aiguise sa lame. Le même geste, cent fois.' }) },
       {
-        id: 'eirik', type: 'pnj', perso: 'eirik', x: 690, nom: 'Eirik',
+        id: 'eirik', type: 'pnj', perso: 'eirik', x: 1330, nom: 'Eirik',
         visible: si.vivant('eirik'),
         important: (e) => !e.flags.c2_eirik_vu && e.confiance.eirik >= 1,
         action: (e) => (e.flags.c2_eirik_vu
@@ -198,7 +200,33 @@ Ulf te regarde. Il n'a pas l'air surpris.`;
           : { scene: 'c2_ilot_eirik' }),
       },
       {
-        id: 'sortie', type: 'sortie', x: 756, nom: 'Dormir',
+        id: 'epave', type: 'zone', x: 980, y: 280, l: 230, h: 100, nom: 'Une vieille épave',
+        action: { examiner: 'Des membrures noires qui sortent du sable comme des côtes. Un bateau du nord, à la coupe de l’étrave. Quelqu’un est déjà passé par ici en allant vers la Francie. Il n’est pas allé plus loin.', effets: fx.flag('c2_epave_vue') },
+      },
+      {
+        id: 'tombe', type: 'zone', x: 1226, y: 290, l: 100, h: 90, nom: 'Une tombe de marin',
+        action: (e) => (e.flags.c2_tombe_honoree
+          ? { examiner: 'Ta pierre est en haut du tas. Elle ne tiendra pas trois hivers. C’est déjà plus que ce qu’on a fait pour d’autres.' }
+          : {
+              examiner: 'Un tas de galets, une rame plantée, un bouclier fendu. Personne n’a gravé de nom. Tu ramasses une pierre sur la grève et tu la poses en haut du tas. Ça ne coûte rien. Les dieux aiment ce qui ne rapporte rien.',
+              effets: fx.tous(fx.flag('c2_tombe_honoree'), fx.faveur(1)),
+            }),
+      },
+      {
+        id: 'horizon', type: 'zone', x: 1500, y: 196, l: 180, h: 90, nom: 'L’horizon, au sud',
+        action: (e) => ({
+          examiner: e.perso.origine === 'pecheur'
+            ? 'Des éclairs, très loin, sans un bruit. Et la houle qui arrive de là-bas, longue et grasse, alors que le vent dit le contraire. Ton père appelait ça « la mer qui ment ». Demain soir, elle sera sur vous. Tu dormiras habillé·e.'
+            : 'Des éclairs, très loin, sans un bruit. Trop loin pour entendre le tonnerre. Ça vient droit sur votre route. Tu te promets de garder une main près du mât, demain.',
+          effets: (x) => {
+            x.flags.c2_horizon_vu = true;
+            if (x.perso.origine === 'pecheur') x.flags.tempete_prevue = true;
+            else x.flags.orage_vu = true;
+          },
+        }),
+      },
+      {
+        id: 'sortie', type: 'sortie', x: 44, nom: 'Dormir près du drakkar',
         action: { suivant: 'c2_tempete', condition: si.flag('c2_feu_vu'), refus: 'Pas encore. Il y a un feu, des gens autour, et c’est la coutume de dire pourquoi on part. On dort après.' },
       },
     ],
@@ -251,6 +279,7 @@ Tu ne sais pas si c'est un compliment. Avec lui, ça ne l'est jamais tout à fai
   {
     id: 'c2_ilot_eirik',
     decor: 'ilot',
+    camera: 800,
     personnages: ['eirik'],
     entree: fx.flag('c2_eirik_vu'),
     texte: (e) => `
@@ -283,6 +312,7 @@ ${e.confiance.eirik >= 1
   {
     id: 'c2_ilot_eirik_suite',
     decor: 'ilot',
+    camera: 800,
     personnages: ['eirik'],
     texte: (e) => {
       if (e.flags.eirik_nage_pas)
@@ -421,7 +451,7 @@ Et Eirik. Eirik n'est plus sur le pont. Eirik est dans l'eau, une main accroché
 
 Tu n'as le temps que d'une chose.`,
     chrono: {
-      duree: (e) => (e.flags.tempete_prevue ? 12 : 8),
+      duree: (e) => (e.flags.tempete_prevue ? 12 : e.flags.orage_vu ? 10 : 8),
       timeout: {
         effets: fx.tous(fx.blesser('cotes'), fx.tuer('eirik'), fx.flag('tempete_issue', 'temps')),
         suivant: 'c2_tempete_suite',

@@ -152,6 +152,7 @@
 /* Le décor occupe tout l'écran ; la boîte de dialogue se pose par-dessus, en bas. */
 .jeu__scene { position: absolute; inset: 0; overflow: hidden; cursor: pointer; }
 .jeu__scene svg { width: 100%; height: 100%; display: block; }
+.jeu__scene::after { content: ''; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 150px rgba(0, 0, 0, 0.4); }
 .jeu__scene.entre svg { animation: fondu 0.7s both; }
 @keyframes fondu { from { opacity: 0; } to { opacity: 1; } }
 

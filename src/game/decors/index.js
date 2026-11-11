@@ -6,7 +6,8 @@
 import { hutte } from './hutte.js';
 import { halle } from './halle.js';
 import { port } from './port.js';
-import { depart, mer, ilot, tempete, brouillard } from './drakkar.js';
+import { depart, mer, tempete, brouillard } from './drakkar.js';
+import { ilot } from './ilot.js';
 import { cour } from './cour.js';
 
 export const vide = () => ({

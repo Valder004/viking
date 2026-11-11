@@ -18,8 +18,9 @@ export function composerDecor(scene, etat) {
   const decor = DECORS[scene.decor] ?? DECORS.vide;
   const pnj = (typeof scene.personnages === 'function' ? scene.personnages(etat) : scene.personnages) ?? [];
   const presents = pnj.filter((id) => !etat.morts[id] && PERSONNAGES[id]);
-  const { svg, joueur, places } = decor(etat, presents.length);
-  const cam = typeof scene.camera === 'function' ? scene.camera(etat) : scene.camera ?? 0;
+  const { svg, joueur, places, largeur = 800 } = decor(etat, presents.length);
+  const voulu = typeof scene.camera === 'function' ? scene.camera(etat) : scene.camera ?? 0;
+  const cam = Math.max(0, Math.min(largeur - 800, voulu));
 
   const groupe = (id, contenu, p) =>
     `<g transform="translate(${p.x + cam} ${p.y}) scale(${p.scale})${p.miroir ? ' translate(200 0) scale(-1 1)' : ''}"><g class="perso" data-perso="${id}">${contenu}</g></g>`;

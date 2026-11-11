@@ -191,7 +191,7 @@ Ce n'est pas un compliment. Ce n'est pas une insulte non plus. **Ta mère :** «
         id: 'sortie', type: 'sortie', x: 1572, nom: 'Descendre au port',
         action: {
           suivant: 'c1_port',
-          position: 404,
+          position: 130,
           condition: si.flag('c1_discours_vu'),
           refus: 'Le chemin du port est vide. Tout le village est dans la grande halle : le jarl parle ce matin, et personne ne manque ça.',
         },
@@ -414,15 +414,17 @@ Au fond, Ulf le Borgne hoche lentement la tête. Il a compris quelque chose sur 
     type: 'lieu',
     decor: 'port',
     titre: 'Le port, la nuit',
+    largeur: 1600,
     entree: fx.flag('c1_nuit'),
     arrivee: 'La nuit est tombée sans prévenir, comme elle fait ici. Le drakkar dort à quai. Il te reste quelques heures, et des gens à voir avant de dormir.',
-    sol: { y: 408, xmin: 26, xmax: 774 },
-    depart: 404,
+    sol: { y: 408, xmin: 26, xmax: 1556 },
+    depart: 130,
     quetes: [
       { texte: 'Écouter ce qu’Ulf a à dire', fait: si.flag('c1_ulf_vu') },
       { texte: 'Rejoindre Sigrid au bout du quai', fait: si.flag('c1_sigrid_vue') },
       { texte: 'Donner quelque chose à la mer', visible: si.flag('c1_ulf_vu'), fait: si.flag('c1_offrande_vue'), facultatif: true },
       { texte: 'Voir ce qui bouge près des caisses', fait: si.flag('c1_chien_vu'), facultatif: true },
+      { texte: 'Lire la pierre levée, tout au bout', fait: si.flag('c1_pierre_vue'), facultatif: true },
       { texte: 'Rentrer dormir', visible: si.et(si.flag('c1_ulf_vu'), si.flag('c1_sigrid_vue')), fait: () => false },
     ],
     elements: [
@@ -458,27 +460,44 @@ Au fond, Ulf le Borgne hoche lentement la tête. Il a compris quelque chose sur 
         action: { examiner: (e) => (e.flags.c1_ulf_vu ? 'Ils ne sont plus que deux. L’un des deux te regarde, de l’œil qui ne cligne pas.' : 'Trois corbeaux, posés sur la vergue, noirs sur la lune. Aucun ne bouge.') },
       },
       {
-        id: 'eirik', type: 'pnj', perso: 'eirik', x: 476, nom: 'Eirik',
+        id: 'eirik', type: 'pnj', perso: 'eirik', x: 700, nom: 'Eirik',
         important: si.pasFlag('c1_eirik_vu'),
         action: (e) => (e.flags.c1_eirik_vu
           ? { examiner: 'Eirik lance des cailloux dans l’eau, un par un, sans regarder où ils tombent.' }
           : { scene: 'c1_port_eirik' }),
       },
       {
-        id: 'sigrid', type: 'pnj', perso: 'sigrid', x: 604, nom: 'Sigrid',
+        id: 'sigrid', type: 'pnj', perso: 'sigrid', x: 1350, nom: 'Sigrid',
         important: si.pasFlag('c1_sigrid_vue'),
         action: (e) => (e.flags.c1_sigrid_vue
           ? { examiner: e.flags.couteau_repare ? 'Sigrid fait tourner le couteau réparé dans sa main. Elle ne le lâchera plus.' : 'Sigrid regarde vers le sud. Elle y est déjà.' }
           : { scene: 'c1_port_sigrid' }),
       },
       {
-        id: 'eau', type: 'zone', x: 668, y: 262, l: 56, h: 50, nom: 'L’eau noire',
+        id: 'eau', type: 'zone', x: 1500, y: 270, l: 60, h: 50, nom: 'L’eau noire',
         visible: si.et(si.flag('c1_ulf_vu'), si.pasFlag('c1_offrande_vue')),
         important: () => true,
         action: { scene: 'c1_offrande' },
       },
       {
-        id: 'harengs', type: 'zone', x: 728, y: 266, l: 44, h: 60, nom: 'Un tonneau de harengs',
+        id: 'sechoirs', type: 'zone', x: 926, y: 250, l: 170, h: 120, nom: 'Les séchoirs à poisson',
+        action: { examiner: 'Des morues ouvertes en deux, raides de gel, qui claquent doucement l’une contre l’autre. De quoi nourrir le village jusqu’au printemps. Ou un équipage jusqu’en Francie.' },
+      },
+      {
+        id: 'hangar', type: 'zone', x: 1194, y: 250, l: 150, h: 120, nom: 'Le hangar à bateaux',
+        action: { examiner: 'Dedans, une coque retournée, plus vieille que toi. Le bateau du vieux jarl. Personne ne l’a remis à l’eau depuis six ans, et personne n’a osé le brûler.', effets: fx.flag('c1_hangar_vu') },
+      },
+      {
+        id: 'pierre_levee', type: 'zone', x: 1548, y: 250, l: 46, h: 110, nom: 'La pierre levée',
+        action: {
+          examiner: (e) => (e.flags.c1_sigrid_vue
+            ? 'Des runes rouges, repeintes chaque printemps. Les noms de ceux que la mer a gardés. Tout en bas, d’une main plus maladroite : ARNE. Sigrid avait douze ans.'
+            : 'Des runes rouges, repeintes chaque printemps. Les noms de ceux que la mer a gardés. Il reste de la place en bas. Il en reste toujours.'),
+          effets: fx.flag('c1_pierre_vue'),
+        },
+      },
+      {
+        id: 'harengs', type: 'zone', x: 1042, y: 266, l: 44, h: 60, nom: 'Un tonneau de harengs',
         action: { prendre: 'hareng', texte: 'Le couvercle ne tient plus. Tu plonges la main dans la saumure et tu en sors un hareng. Personne ne comptera.' },
       },
     ],
@@ -576,6 +595,7 @@ Au-dessus, un corbeau s'envole. Il en reste deux. Ulf ne commente pas.`;
   {
     id: 'c1_offrande',
     decor: 'port',
+    camera: 800,
     personnages: [],
     texte: (e) => `
 Au bout du quai, l'eau ne reflète plus rien. Elle est noire, lisse, et elle attend avec la patience de ce qui a toujours gagné.
@@ -610,6 +630,7 @@ ${e.inventaire.length ? `Tu regardes ce que tu as sur toi.` : `Tu n'as rien dans
   {
     id: 'c1_offrande_suite',
     decor: 'port',
+    camera: 800,
     personnages: ['ulf'],
     entree: fx.flag('c1_offrande_vue'),
     texte: (e) => {
@@ -638,6 +659,7 @@ Ulf s'est approché sans bruit.
   {
     id: 'c1_port_eirik',
     decor: 'port',
+    camera: 360,
     personnages: ['eirik'],
     entree: fx.flag('c1_eirik_vu'),
     texte: (e) => {
@@ -699,6 +721,7 @@ Il en lance un autre. Il regarde l'eau un peu trop fixement pour quelqu'un qui n
   {
     id: 'c1_port_eirik_suite',
     decor: 'port',
+    camera: 360,
     personnages: ['eirik'],
     texte: (e) => {
       if (e.flags.eirik_biere)
@@ -756,6 +779,7 @@ Il se lève et s'éloigne du bord. De deux pas. Sans s'en rendre compte.`;
   {
     id: 'c1_port_sigrid',
     decor: 'port',
+    camera: 800,
     personnages: ['sigrid'],
     texte: `
 Sigrid est au bout du quai, là où les planches deviennent molles. Elle fait tourner quelque chose dans sa main. Quand tu arrives, elle ne le cache pas ; elle te le montre.
@@ -804,6 +828,7 @@ Elle te regarde enfin.
   {
     id: 'c1_port_sigrid_suite',
     decor: 'port',
+    camera: 800,
     personnages: ['sigrid'],
     entree: fx.flag('c1_sigrid_vue'),
     texte: (e) => {
