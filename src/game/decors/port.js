@@ -2,7 +2,7 @@
 // À gauche le village et le drakkar ; puis les séchoirs à poisson, le hangar à bateaux,
 // une barque, et tout au bout la pierre levée face au large.
 // Deux ambiances (nuit / petit matin). Les corbeaux et le chien suivent l'histoire.
-import { degrade, halo, vagues, ecume, etoiles, maison, sapins, proue, tonneau, caisse, corbeau, mouette, nuage, neige, pluie } from './elements.js';
+import { degrade, halo, vagues, ecume, etoiles, maison, sapins, proue, tonneau, caisse, corbeau, mouette, nuage, neige, pluie, aurore } from './elements.js';
 
 const L = 1600;
 
@@ -84,7 +84,7 @@ export function port(etat, nbPnj = 0) {
       </defs>
       <rect width="${L}" height="450" fill="url(#p-ciel)"/>
       ${nuit
-        ? `${etoiles(80, 200)}<g transform="translate(800 0)">${etoiles(80, 200)}</g>`
+        ? `${etoiles(80, 200)}<g transform="translate(800 0)">${etoiles(80, 200)}</g>${aurore(L, 20, 'p-au')}`
         : `${nuage(180, 90, 1.1, '#f6dcc0', 0.5)}${nuage(600, 60, 0.8, '#f6dcc0', 0.4)}${nuage(430, 130, 0.6, '#fff', 0.3)}${nuage(1040, 80, 1.2, '#f6dcc0', 0.45)}${nuage(1420, 56, 0.9, '#f6dcc0', 0.4)}`}
       ${nuit
         ? `<circle cx="384" cy="40" r="110" fill="url(#p-astre)"/><circle cx="384" cy="40" r="30" fill="#eef1f6"/><circle cx="374" cy="32" r="6" fill="#cfd6e2" opacity="0.6"/><circle cx="394" cy="52" r="4.500" fill="#cfd6e2" opacity="0.6"/>`

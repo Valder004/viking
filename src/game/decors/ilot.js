@@ -1,7 +1,7 @@
 // L'îlot, la nuit : une grève deux fois plus large que l'écran.
 // À gauche le drakkar tiré au sec et le feu ; plus loin une vieille épave, une tombe de marin,
 // et la pointe sud, d'où l'on voit l'orage monter sur l'horizon.
-import { degrade, halo, vagues, ecume, etoiles, proue, feu, braises } from './elements.js';
+import { degrade, halo, vagues, ecume, etoiles, proue, feu, braises, aurore } from './elements.js';
 
 const L = 1600;
 
@@ -29,7 +29,7 @@ export function ilot() {
         ${halo('i-orage', '#b9c6ff', 0.5)}
       </defs>
       <rect width="${L}" height="450" fill="url(#i-ciel)"/>
-      ${etoiles(110, 220)}<g transform="translate(800 0)">${etoiles(110, 220)}</g>
+      ${etoiles(110, 220)}<g transform="translate(800 0)">${etoiles(110, 220)}</g>${aurore(L, 30, 'i-au')}
       <path d="M-20 60 Q500 -30 1000 70 Q1300 120 1620 60" stroke="#aab6dc" stroke-width="46" fill="none" opacity="0.05"/>
       <circle cx="620" cy="70" r="100" fill="url(#i-lune)"/><circle cx="620" cy="70" r="24" fill="#eef1f6"/>
       <circle cx="611" cy="63" r="5.500" fill="#cfd6e2" opacity="0.6"/><circle cx="628" cy="79" r="4" fill="#cfd6e2" opacity="0.6"/>

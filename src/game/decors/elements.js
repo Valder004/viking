@@ -164,7 +164,8 @@ export function neige({ n = 70, x0 = 0, largeur = 800, haut = 450, force = 1 } =
     const ampli = [6, 12, 22][couche];
     s += `<g class="flocon" style="--d:${duree.toFixed(2)}s;--r:${retard.toFixed(2)}s;--h:${haut + 40}px"><circle class="flocon__grain" style="--s:${derive.toFixed(2)}s;--a:${ampli}px" cx="${x.toFixed(1)}" cy="0" r="${r.toFixed(2)}" fill="#fff" opacity="${[0.45, 0.7, 0.9][couche]}"/></g>`;
   }
-  return `<g class="meteo" pointer-events="none">${s}</g>`;
+  // Le vent souffle par rafales : toute la neige dérive ensemble, en plus de la dérive de chaque flocon.
+  return `<g class="meteo" pointer-events="none"><g class="rafale">${s}</g></g>`;
 }
 
 /** Pluie battante en deux couches, avec éclaboussures sur une ligne (pont, quai…). */
@@ -186,5 +187,36 @@ export function pluie({ n = 110, largeur = 800, haut = 450, eclatY = null } = {}
       eclats += `<ellipse class="eclat" style="--r:${(-alea(i, 8) * 1.4).toFixed(2)}s;--d:${(0.5 + alea(i, 9) * 0.6).toFixed(2)}s" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="7" ry="2.200" fill="none" stroke="#dfe8f2" stroke-width="1.300"/>`;
     }
   }
-  return `<g class="meteo" pointer-events="none">${eclats}${s}</g>`;
+  return `<g class="meteo" pointer-events="none">${eclats}<g class="rafale rafale--pluie">${s}</g></g>`;
+}
+
+/**
+ * Aurore boréale : des voiles verts et violets qui ondulent lentement (animations SVG).
+ * prefixe : identifiant unique pour les dégradés de ce décor.
+ */
+export function aurore(largeur = 800, y = 40, prefixe = 'au') {
+  const bande = (n, yb, couleurs, dur, decal, op) => {
+    const forme = (a) => `M-50 ${yb} C ${largeur * 0.2} ${yb - 40 * a} ${largeur * 0.35} ${yb + 34 * a} ${largeur * 0.5} ${yb - 14 * a} S ${largeur * 0.8} ${yb - 46 * a} ${largeur + 50} ${yb + 8 * a} L${largeur + 50} ${yb + 120} C ${largeur * 0.8} ${yb + 90} ${largeur * 0.62} ${yb + 146} ${largeur * 0.5} ${yb + 108} S ${largeur * 0.2} ${yb + 140} -50 ${yb + 100} Z`;
+    return `<defs>${degrade(`${prefixe}${n}`, couleurs)}</defs>
+      <path d="${forme(1)}" fill="url(#${prefixe}${n})" opacity="${op}">
+        <animate attributeName="d" dur="${dur}s" begin="${decal}s" repeatCount="indefinite" values="${forme(1)};${forme(-0.7)};${forme(1)}" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/>
+        <animate attributeName="opacity" dur="${(dur * 0.6).toFixed(1)}s" begin="${decal}s" repeatCount="indefinite" values="${op * 0.5};${op};${op * 0.5}"/>
+      </path>`;
+  };
+  return `<g pointer-events="none" style="mix-blend-mode:screen">
+    ${bande(1, y, [[0, '#3affb0', 0], [0.45, '#3affb0', 0.6], [1, '#7a5cff', 0]], 16, 0, 0.45)}
+    ${bande(2, y + 40, [[0, '#7affd0', 0], [0.5, '#4ad0a0', 0.4], [1, '#c060ff', 0]], 21, -7, 0.35)}
+  </g>`;
+}
+
+/** Poussière dorée qui flotte dans un rayon de lumière (monastère, trésor, hutte). */
+export function poussiere({ n = 24, x0 = 0, largeur = 200, y0 = 100, hauteur = 200, couleur = '#ffe6a8' } = {}) {
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    const x = x0 + alea(i, 11) * largeur;
+    const y = y0 + alea(i, 12) * hauteur;
+    const d = 6 + alea(i, 13) * 8;
+    s += `<circle class="grain" style="--d:${d.toFixed(1)}s;--r:${(-alea(i, 14) * d).toFixed(1)}s" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(0.7 + alea(i, 15) * 1.1).toFixed(2)}" fill="${couleur}"/>`;
+  }
+  return `<g pointer-events="none">${s}</g>`;
 }

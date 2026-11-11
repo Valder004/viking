@@ -1,7 +1,7 @@
 // La cour du village : un décor deux fois plus large que l'écran, qui défile avec le joueur.
 // De gauche à droite : la hutte familiale, le puits, la forge, la grande halle, le chemin du port.
 // Gris et neigeux le matin ; de nuit après le discours de Hakon (fenêtres et torches allumées).
-import { halo, degrade, feu, braises, sapins, maison, etoiles, proue, neige, nuage, corbeau } from './elements.js';
+import { halo, degrade, feu, braises, sapins, maison, etoiles, proue, neige, nuage, corbeau, aurore } from './elements.js';
 
 const L = 1600;
 
@@ -49,7 +49,7 @@ export function cour(etat) {
       </defs>
       <rect width="${L}" height="450" fill="url(#c-ciel)"/>
       ${nuit
-        ? `${etoiles(90, 180)}<g transform="translate(800 0)">${etoiles(90, 180)}</g><circle cx="560" cy="64" r="100" fill="url(#c-lune)"/><circle cx="560" cy="64" r="24" fill="#eef1f6"/><circle cx="551" cy="57" r="5" fill="#cfd6e2" opacity="0.6"/>`
+        ? `${etoiles(90, 180)}<g transform="translate(800 0)">${etoiles(90, 180)}</g>${aurore(L, 10, 'c-au')}<circle cx="560" cy="64" r="100" fill="url(#c-lune)"/><circle cx="560" cy="64" r="24" fill="#eef1f6"/><circle cx="551" cy="57" r="5" fill="#cfd6e2" opacity="0.6"/>`
         : `${nuage(240, 70, 1.4, '#fff', 0.35)}${nuage(760, 50, 1.1, '#fff', 0.3)}${nuage(1260, 90, 1.5, '#fff', 0.35)}${nuage(1500, 40, 0.9, '#fff', 0.3)}`}
 
       <!-- montagnes -->

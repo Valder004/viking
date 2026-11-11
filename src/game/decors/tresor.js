@@ -1,6 +1,6 @@
 // La salle du trésor du comte Gautier : décor large (1200), voûtes, coffres, bannières,
 // la table du comte et sa correspondance, une fenêtre ouverte sur la cour en flammes.
-import { halo, feu, braises } from './elements.js';
+import { halo, feu, braises, poussiere } from './elements.js';
 
 const L = 1200;
 const PIERRE = '#4a3c30';
@@ -124,6 +124,7 @@ export function tresor(etat) {
       <rect width="${L}" height="450" fill="#ffb060" opacity="0.05" pointer-events="none"/>
 
       <!--persos-->
+      ${poussiere({ n: 22, x0: 880, largeur: 180, y0: 140, hauteur: 240, couleur: '#ffc890' })}${poussiere({ n: 14, x0: 600, largeur: 300, y0: 200, hauteur: 160 })}
     </svg>`,
     joueur: { x: 590, y: 132, scale: 1.04 },
     places: [

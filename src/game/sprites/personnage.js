@@ -16,6 +16,47 @@ const LIN = '#e9dfc8';
 
 const CARRURES = { fine: 30, moyenne: 34, large: 40 };
 
+// ---- Animations ----------------------------------------------------------------
+// Animations SVG (SMIL) : chaque rotation donne son pivot explicitement (hanche, épaule, cou),
+// ce qui reste exact quel que soit l'endroit où le personnage est placé et mis à l'échelle.
+// Au repos : respiration, clignement, tête qui bouge à peine, cape qui ondule.
+// En marche : jambes et bras balancés, déclenchés par lieu.js (begin="indefinite").
+const ANIM = typeof window === 'undefined' || !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+const SPLINE4 = 'calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1;0.45 0 0.55 1"';
+const SPLINE2 = 'calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"';
+const DUREE_PAS = 0.64; // un cycle = deux pas
+
+/** Ouvre un groupe qui oscille autour de (px, py). marche : ne démarre qu'à la demande. */
+function ouvrirRotation(px, py, amp, dur, decal, marche = false) {
+  if (!ANIM) return '<g>';
+  const v = (a) => `${a} ${px} ${py}`;
+  const quand = marche ? 'begin="indefinite" class="anim-marche"' : `begin="${(-decal).toFixed(2)}s"`;
+  return `<g><animateTransform attributeName="transform" type="rotate" dur="${dur}s" ${quand} repeatCount="indefinite"
+    values="${v(0)};${v(amp)};${v(0)};${v(-amp)};${v(0)}" ${SPLINE4}/>`;
+}
+
+/** Respiration : léger gonflement du haut du corps, à partir des hanches. */
+function ouvrirRespiration(decal) {
+  if (!ANIM) return '<g><g><g>';
+  return `<g transform="translate(100 198)"><g><animateTransform attributeName="transform" type="scale" dur="3.8s" begin="${(-decal).toFixed(2)}s"
+    repeatCount="indefinite" values="1 1;1.008 1.02;1 1" ${SPLINE2}/><g transform="translate(-100 -198)">`;
+}
+
+/** Clignement des yeux, à un rythme propre à chaque personnage. */
+function clignement(contenu, decal) {
+  if (!ANIM) return contenu;
+  const dur = (3.4 + (decal % 2.6)).toFixed(2);
+  return `<g transform="translate(100 60.5)"><g><animateTransform attributeName="transform" type="scale" dur="${dur}s" begin="${(-decal).toFixed(2)}s"
+    repeatCount="indefinite" values="1 1;1 1;1 0.08;1 1;1 1" keyTimes="0;0.9;0.93;0.96;1"/><g transform="translate(-100 -60.5)">${contenu}</g></g></g>`;
+}
+
+/** Cape qui ondule depuis les épaules. */
+function capeOndulante(contenu, decal) {
+  if (!ANIM) return contenu;
+  return `<g transform="translate(100 108)"><g><animateTransform attributeName="transform" type="skewX" dur="4.6s" begin="${(-decal).toFixed(2)}s"
+    repeatCount="indefinite" values="0;1.8;0;-1.8;0" ${SPLINE4}/><g transform="translate(-100 -108)">${contenu}</g></g></g>`;
+}
+
 /** Tresse : chaîne de maillons entre deux points. */
 function tresse(x1, y1, x2, y2, couleur, n = 8) {
   let s = '';
@@ -42,15 +83,22 @@ export function personnage(c) {
   const pantalon = c.pantalon ?? '#4a3b2e';
   const bless = c.blessures ?? [];
   const p = []; // calques, dans l'ordre
+  // Décalage propre à ce personnage : ils ne respirent ni ne clignent tous en même temps.
+  const decal = (compteur * 0.731) % 3.7;
+  // Pivots des épaules, pour le balancement des bras en marche.
+  const epauleG = [L + 5, 111];
+  const epauleD = [R - 5, 111];
+  const brasGauche = () => ouvrirRotation(epauleG[0], epauleG[1], -10, DUREE_PAS, 0, true);
+  const brasDroitAnim = () => ouvrirRotation(epauleD[0], epauleD[1], 8, DUREE_PAS, 0, true);
 
   // ---- Ombre au sol
   p.push(`<ellipse cx="100" cy="286" rx="${ep + 14}" ry="7" fill="rgba(0,0,0,0.32)"/>`);
 
   // ---- Cape (dos)
   if (c.cape) {
-    p.push(`<path d="M${L - 4} 106 Q100 92 ${R + 4} 106 L${R + 18} 256 Q100 270 ${L - 18} 256 Z" fill="${c.cape}"/>
+    p.push(capeOndulante(`<path d="M${L - 4} 106 Q100 92 ${R + 4} 106 L${R + 18} 256 Q100 270 ${L - 18} 256 Z" fill="${c.cape}"/>
       <path d="M100 96 Q${R} 96 ${R + 4} 106 L${R + 18} 256 Q${R - 10} 266 100 267 Z" fill="${OMBRE}"/>
-      <path d="M${L - 10} 180 Q${L - 6} 220 ${L - 16} 254" stroke="${OMBRE}" stroke-width="3" fill="none"/>`);
+      <path d="M${L - 10} 180 Q${L - 6} 220 ${L - 16} 254" stroke="${OMBRE}" stroke-width="3" fill="none"/>`, decal));
   }
 
   // ---- Cheveux (dos)
@@ -92,20 +140,29 @@ export function personnage(c) {
       p.push(`<path d="M${L + 2} 160 Q100 168 ${R - 2} 160" stroke="#cbb994" stroke-width="3.5" fill="none"/>
         <path d="M${L + 14} 163 L${L + 12} 206 M${L + 18} 163 L${L + 20} 198" stroke="#cbb994" stroke-width="3" stroke-linecap="round"/>`);
     }
+    p.push(ouvrirRespiration(decal));
   } else {
-    p.push(`
+    // Chaque jambe est un groupe qui pivote à la hanche quand le personnage marche.
+    p.push(`${ouvrirRotation(91, 200, 14, DUREE_PAS, 0, true)}
       <path d="M82 198 L99 198 L98 262 L84 262 Z" fill="${pantalon}"/>
+      <path d="M83.5 234 L98 234 L98 262 L84 262 Z" fill="#9c8a66"/>
+      <path d="M84 240 l14 -4 M84 247 l14 -4 M84 254 l14 -4 M84 261 l14 -4" stroke="${OMBRE_FORTE}" stroke-width="1.2"/>
+      <path d="M82 259 L99 259 L99 280 Q99 285 93 285 L77 285 Q75 277 82 271 Z" fill="${CUIR_SOMBRE}"/>
+      <path d="M82 262 L99 262" stroke="${CUIR}" stroke-width="3"/>
+      <path d="M78 283 L98 283" stroke="#1a110a" stroke-width="2.5" stroke-linecap="round"/></g>`);
+    p.push(`${ouvrirRotation(109, 200, -14, DUREE_PAS, 0, true)}
       <path d="M101 198 L118 198 L116 262 L102 262 Z" fill="${pantalon}"/>
       <path d="M101 198 L118 198 L116 262 L102 262 Z" fill="${OMBRE}"/>
-      <!-- bandes molletières -->
-      <path d="M83.5 234 L98 234 L98 262 L84 262 Z" fill="#9c8a66"/><path d="M102 234 L116.5 234 L116 262 L102 262 Z" fill="#9c8a66"/>
+      <path d="M102 234 L116.5 234 L116 262 L102 262 Z" fill="#9c8a66"/>
       <path d="M102 234 L116.5 234 L116 262 L102 262 Z" fill="${OMBRE}"/>
-      <path d="M84 240 l14 -4 M84 247 l14 -4 M84 254 l14 -4 M84 261 l14 -4 M102 240 l14 -4 M102 247 l14 -4 M102 254 l14 -4 M102 261 l14 -4" stroke="${OMBRE_FORTE}" stroke-width="1.2"/>
-      <!-- bottes -->
-      <path d="M82 259 L99 259 L99 280 Q99 285 93 285 L77 285 Q75 277 82 271 Z" fill="${CUIR_SOMBRE}"/>
+      <path d="M102 240 l14 -4 M102 247 l14 -4 M102 254 l14 -4 M102 261 l14 -4" stroke="${OMBRE_FORTE}" stroke-width="1.2"/>
       <path d="M101 259 L118 259 L118 271 Q125 277 123 285 L107 285 Q101 285 101 280 Z" fill="${CUIR_SOMBRE}"/>
-      <path d="M82 262 L99 262 M101 262 L118 262" stroke="${CUIR}" stroke-width="3"/>
-      <path d="M78 283 L98 283 M103 283 L122 283" stroke="#1a110a" stroke-width="2.5" stroke-linecap="round"/>`);
+      <path d="M101 262 L118 262" stroke="${CUIR}" stroke-width="3"/>
+      <path d="M103 283 L122 283" stroke="#1a110a" stroke-width="2.5" stroke-linecap="round"/>
+      ${bless.includes('jambe') ? `<path d="M101.5 208 L117.5 208 L117 230 L102 230 Z" fill="#e9e2d2"/><path d="M102 214 l15 3 M102 221 l15 3" stroke="#b9ad94" stroke-width="1.2"/><circle cx="110" cy="219" r="3.5" fill="#8a1c1c" opacity="0.55"/>` : ''}</g>`);
+
+    // Tout le haut du corps respire à partir des hanches.
+    p.push(ouvrirRespiration(decal));
 
     // Tunique
     p.push(`
@@ -160,22 +217,23 @@ export function personnage(c) {
 
   // ---- Bras gauche (à gauche de l'image)
   const manche = c.robe ?? tenue;
-  p.push(`
+  p.push(`${brasGauche()}
     <path d="M${L + 5} 111 Q${L - 9} 134 ${L - 4} 158 L${L - 2} 186" stroke="${manche}" stroke-width="15" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M${L - 4} 164 L${L - 2} 186" stroke="${c.robe ? manche : CUIR}" stroke-width="15" stroke-linecap="butt"/>
     ${c.robe ? '' : `<path d="M${L - 10} 168 l14 2 M${L - 9.5} 175 l14 2 M${L - 9} 182 l14 2" stroke="${CUIR_SOMBRE}" stroke-width="1.3"/>`}
-    <circle cx="${L - 2}" cy="193" r="8.5" fill="${peau}"/>`);
+    <circle cx="${L - 2}" cy="193" r="8.5" fill="${peau}"/></g>`);
 
   // ---- Bras droit
-  const brasDroit = `
+  const brasDroit = `${brasDroitAnim()}
     <path d="M${R - 5} 111 Q${R + 9} 134 ${R + 4} 158 L${R + 2} 186" stroke="${manche}" stroke-width="15" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M${R - 5} 111 Q${R + 9} 134 ${R + 4} 158 L${R + 2} 186" stroke="${OMBRE}" stroke-width="15" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     <path d="M${R + 4} 164 L${R + 2} 186" stroke="${c.robe ? manche : CUIR}" stroke-width="15"/>
     ${c.robe ? '' : `<path d="M${R - 4} 170 l14 -2 M${R - 4.5} 177 l14 -2 M${R - 5} 184 l14 -2" stroke="${CUIR_SOMBRE}" stroke-width="1.3"/>`}
-    ${c.anneaux ? `<path d="M${R - 2} 136 l15 -3" stroke="${OR}" stroke-width="4" stroke-linecap="round"/><path d="M${L + 2} 133 l-15 3" stroke="${OR}" stroke-width="4" stroke-linecap="round"/>` : ''}`;
+    ${c.anneaux ? `<path d="M${R - 2} 136 l15 -3" stroke="${OR}" stroke-width="4" stroke-linecap="round"/><path d="M${L + 2} 133 l-15 3" stroke="${OR}" stroke-width="4" stroke-linecap="round"/>` : ''}</g>`;
   p.push(brasDroit);
 
-  // ---- Cou et tête
+  // ---- Cou et tête (la tête bouge à peine, autour du cou)
+  p.push(ouvrirRotation(100, 96, 1.3, 6.5, decal));
   p.push(`
     <path d="M91 80 L109 80 L110 101 Q100 108 90 101 Z" fill="${peau}"/>
     <path d="M91 86 Q100 97 109 86 L109 82 L91 82 Z" fill="${OMBRE}"/>
@@ -209,7 +267,7 @@ export function personnage(c) {
   const oeilDroit = `<ellipse cx="109" cy="60.5" rx="3.6" ry="2.8" fill="#f7f1e3"/><circle cx="109.6" cy="60.7" r="2" fill="${c.yeux ?? '#3a2a1c'}"/><circle cx="110.3" cy="60" r="0.7" fill="#fff"/><path d="M105 58.6 Q109 56.6 113 58.6" stroke="${OMBRE_FORTE}" stroke-width="1.2" fill="none"/>`;
   const borgne = c.cacheOeil || bless.includes('oeil');
   p.push(`
-    ${oeilGauche}${borgne ? '' : oeilDroit}
+    ${clignement(`${oeilGauche}${borgne ? '' : oeilDroit}`, decal)}
     <path d="${sourcils}" stroke="${sourcilCouleur}" stroke-width="2.6" stroke-linecap="round" fill="none"/>
     <path d="M100.5 60 L97.5 71.5 Q100.5 74 104 71.5" stroke="${OMBRE_FORTE}" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     ${c.age ? `<path d="M86 65.5 q5 2.5 9 0.5 M105 66 q4 2 9 -0.5 M88 44 q12 -3 24 0 M90 39 q10 -2 20 0" stroke="${OMBRE_FORTE}" stroke-width="1" fill="none" opacity="0.7"/>` : ''}
@@ -301,7 +359,12 @@ export function personnage(c) {
     }
   }
 
-  // ---- Bouclier (tenu main gauche)
+  // Fin de la tête, puis fin du haut du corps qui respire.
+  p.push('</g>');
+  p.push('</g></g></g>');
+
+  // ---- Bouclier (tenu main gauche) : suit le bras gauche
+  p.push(brasGauche());
   if (c.bouclier) {
     const b = c.bouclier;
     const cx = L - 6;
@@ -327,8 +390,10 @@ export function personnage(c) {
       <circle cx="${cx - 2.5}" cy="${cy - 2.5}" r="2" fill="rgba(255,255,255,0.6)"/>
     </g>`);
   }
+  p.push('</g>');
 
-  // ---- Arme (main droite)
+  // ---- Arme (main droite) : suit le bras droit, avec la main et un éventuel bandage
+  p.push(brasDroitAnim());
   const ax = R + 2;
   const armes = {
     hache: `<rect x="${ax - 2.5}" y="96" width="5.5" height="140" rx="2" fill="#6b4a2e"/>
@@ -370,15 +435,13 @@ export function personnage(c) {
   p.push(`<circle cx="${R + 2}" cy="193" r="8.5" fill="${peau}"/><circle cx="${R + 2}" cy="193" r="8.5" fill="${OMBRE}"/>
     ${c.arme ? `<path d="M${R - 4} 190 q6 -3 12 0 M${R - 4} 194 q6 -3 12 0 M${R - 4} 198 q6 -3 12 0" stroke="${OMBRE_FORTE}" stroke-width="1" fill="none"/>` : ''}`);
 
-  // ---- Blessures visibles
+  // ---- Blessures visibles (le bandage de la jambe est dessiné avec la jambe droite)
   if (bless.includes('bras')) {
     p.push(`<path d="M${R + 1} 124 Q${R + 8} 134 ${R + 5} 150" stroke="#e9e2d2" stroke-width="16" fill="none"/>
       <path d="M${R - 6} 128 l15 4 M${R - 5} 136 l15 4 M${R - 5} 144 l15 4" stroke="#b9ad94" stroke-width="1.2"/>
       <circle cx="${R + 5}" cy="138" r="4" fill="#8a1c1c" opacity="0.55"/>`);
   }
-  if (bless.includes('jambe')) {
-    p.push(`<path d="M101.5 208 L117.5 208 L117 230 L102 230 Z" fill="#e9e2d2"/><path d="M102 214 l15 3 M102 221 l15 3" stroke="#b9ad94" stroke-width="1.2"/><circle cx="110" cy="219" r="3.5" fill="#8a1c1c" opacity="0.55"/>`);
-  }
+  p.push('</g>');
   if (bless.includes('cotes')) {
     p.push(`<path d="M${L} 128 L${R} 128 L${R + 1} 152 L${L - 1} 152 Z" fill="#e9e2d2" opacity="0.95"/>
       <path d="M${L} 134 L${R} 137 M${L} 141 L${R} 144 M${L} 148 L${R} 151" stroke="#b9ad94" stroke-width="1.2"/>`);

@@ -4,26 +4,65 @@ import { PERSONNAGES } from '../data/personnages.js';
 import { sauvegarde } from './sauvegarde.js';
 import { formaterTexte } from './texte.js';
 import { composerDecor } from './scene.js';
+import { sceneAccueil } from './decors/accueil.js';
 
 const CHAPITRES = ['Le village', 'Le drakkar', 'La côte franque', 'Le château', 'Le dénouement'];
+
+// Une rune gravée par fin découverte, dans l'ordre des numéros de fin.
+const RUNES_FINS = ['ᚠ', 'ᚢ', 'ᚦ', 'ᚨ', 'ᚱ', 'ᚲ', 'ᚷ', 'ᚹ', 'ᚺ', 'ᚾ'];
+
+/** Nœud entrelacé, au centre du filet sous le titre. */
+const NOEUD = `<svg viewBox="0 0 60 24" width="60" height="24"><g fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round">
+  <path d="M6 12 C14 0 22 0 30 12 C38 24 46 24 54 12"/><path d="M6 12 C14 24 22 24 30 12 C38 0 46 0 54 12"/>
+  <circle cx="30" cy="12" r="4"/></g></svg>`;
+
+/** Ornement de coin : une tête de dragon entrelacée. */
+const COIN = `<svg viewBox="0 0 120 120" width="120" height="120"><g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M6 114 L6 30 Q6 6 30 6 L114 6"/>
+  <path d="M16 104 L16 40 Q16 16 40 16 L104 16" opacity="0.6"/>
+  <path d="M30 6 C40 30 20 40 34 54 C46 66 66 46 54 34 C44 24 30 36 40 44"/>
+  <path d="M6 30 C30 40 40 20 54 34"/>
+  <path d="M60 6 q6 10 0 20 q-6 10 0 20 M6 60 q10 6 20 0 q10 -6 20 0" opacity="0.7"/>
+  <circle cx="40" cy="44" r="2.500" fill="currentColor"/></g></svg>`;
+
+// Une rune du vieux futhark par action du menu, pour le sens autant que pour le décor.
+const RUNES = { continuer: 'ᚱ', nouvelle: 'ᛞ', chapitres: 'ᛒ', fins: 'ᛟ', options: 'ᚲ' };
+
+const plaque = (action, titre, sous, { principal = false, desactive = false } = {}) => `
+  <button class="plaque ${principal ? 'plaque--principale' : ''}" data-action="${action}" ${desactive ? 'disabled' : ''}>
+    <span class="plaque__rune" aria-hidden="true">${RUNES[action]}</span>
+    <span class="plaque__texte"><span class="plaque__titre">${titre}</span>${sous ? `<span class="plaque__sous">${sous}</span>` : ''}</span>
+    <span class="plaque__clou plaque__clou--g" aria-hidden="true"></span><span class="plaque__clou plaque__clou--d" aria-hidden="true"></span>
+  </button>`;
 
 export function monterMenu(racine, actions) {
   const partie = sauvegarde.lirePartie();
   const profil = sauvegarde.lireProfil();
   const nbFins = profil.finsDebloquees.length;
+  const tri = [...FINS].sort((a, b) => a.num - b.num);
 
   racine.innerHTML = `
-    <section class="menu">
-      <div class="menu__titre">
-        <p class="menu__sur">Un jeu narratif</p>
-        <h1>Survivrais-tu<br>au raid ?</h1>
-      </div>
-      <div class="menu__actions">
-        ${partie ? `<button class="btn btn--principal" data-action="continuer">Continuer <small>chapitre ${partie.chapitre} · ${partie.perso.prenom}</small></button>` : ''}
-        <button class="btn ${partie ? '' : 'btn--principal'}" data-action="nouvelle">Nouvelle partie</button>
-        <button class="btn" data-action="chapitres" ${Object.keys(profil.checkpoints).length ? '' : 'disabled'}>Chapitres</button>
-        <button class="btn" data-action="fins">Fins découvertes <small>${nbFins} / ${FINS.length}</small></button>
-        <button class="btn btn--discret" data-action="options">Options</button>
+    <section class="accueil">
+      <div class="accueil__scene">${sceneAccueil()}</div>
+      <div class="accueil__voile" aria-hidden="true"></div>
+      <div class="accueil__coins" aria-hidden="true">${['hg', 'hd', 'bg', 'bd'].map((c) => `<span class="coin coin--${c}">${COIN}</span>`).join('')}</div>
+      <div class="accueil__contenu">
+        <header class="accueil__titre">
+          <p class="accueil__runes" aria-hidden="true">ᛋᚢᚱᚢᛁᚢᚱᚨᛁᛋ · ᛏᚢ · ᚨᚢ · ᚱᚨᛁᛞ</p>
+          <h1><span class="accueil__l1">Survivrais-tu</span><span class="accueil__l2">au raid ?</span></h1>
+          <div class="accueil__filet" aria-hidden="true"><span></span>${NOEUD}<span></span></div>
+          <p class="accueil__sous">Une saga en cinq chapitres. Dix fins. Aucune n'est juste.</p>
+        </header>
+        <nav class="accueil__menu" aria-label="Menu principal">
+          ${partie ? plaque('continuer', 'Continuer la saga', `Chapitre ${partie.chapitre} · ${partie.perso.prenom}`, { principal: true }) : ''}
+          ${plaque('nouvelle', 'Nouvelle saga', partie ? 'Ta partie en cours sera remplacée' : 'Choisis qui tu seras', { principal: !partie })}
+          ${plaque('chapitres', 'Chapitres', Object.keys(profil.checkpoints).length ? 'Reprendre un chapitre déjà atteint' : 'Aucun chapitre atteint', { desactive: !Object.keys(profil.checkpoints).length })}
+          ${plaque('fins', 'Les fins', `${nbFins} découverte${nbFins > 1 ? 's' : ''} sur ${FINS.length}`)}
+          ${plaque('options', 'Options', 'Chronos, données')}
+        </nav>
+        <div class="accueil__pierres" title="${nbFins} fin${nbFins > 1 ? 's' : ''} découverte${nbFins > 1 ? 's' : ''} sur ${FINS.length}">
+          ${tri.map((f) => `<span class="pierre ${profil.finsDebloquees.includes(f.id) ? 'est-gravee' : ''}" aria-hidden="true">${profil.finsDebloquees.includes(f.id) ? RUNES_FINS[f.num - 1] : ''}</span>`).join('')}
+        </div>
       </div>
     </section>`;
 

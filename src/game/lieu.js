@@ -38,8 +38,12 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
     <section class="jeu jeu--lieu">
       <div class="jeu__scene" data-decor></div>
       <div class="hud hud--haut">
-        <div class="hud__lieu panneau">
-          <h2>${echapper(lieu.titre ?? '')}</h2>
+        <div class="hud__lieu panneau" data-panneau-quetes>
+          <button class="hud__titre" data-action="quetes" aria-expanded="true" title="Afficher ou masquer les quêtes">
+            <h2>${echapper(lieu.titre ?? '')}</h2>
+            <span class="hud__compte" data-compte-quetes></span>
+            <span class="hud__chevron" aria-hidden="true">▾</span>
+          </button>
           <ul class="quetes" data-quetes></ul>
         </div>
         <div class="hud__boutons">
@@ -58,6 +62,8 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
   const $ = (s) => racine.querySelector(s);
   const decorEl = $('[data-decor]');
   const quetesEl = $('[data-quetes]');
+  const panneauQuetes = $('[data-panneau-quetes]');
+  const compteQuetesEl = $('[data-compte-quetes]');
   const invEl = $('[data-inventaire]');
   const aideEl = $('[data-aide]');
   const bulleEl = $('[data-bulle]');
@@ -130,14 +136,26 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
     decorEl.querySelector('svg')?.setAttribute('viewBox', camera().toFixed(1) + ' 0 800 450');
   }
 
+  // Panneau de quêtes : repliable d'un clic, état mémorisé pour tous les lieux.
+  const CLE_REPLI = 'viking.quetesRepliees';
+  let replie = false;
+  try { replie = localStorage.getItem(CLE_REPLI) === '1'; } catch { /* stockage indisponible */ }
+
+  function appliquerRepli() {
+    panneauQuetes.classList.toggle('est-replie', replie);
+    panneauQuetes.querySelector('[data-action="quetes"]').setAttribute('aria-expanded', String(!replie));
+  }
+
   function majHud() {
-    quetesEl.innerHTML = (lieu.quetes ?? [])
-      .filter((q) => !q.visible || q.visible(etat))
-      .map((q) => {
-        const ok = q.fait(etat);
-        return `<li class="${ok ? 'est-faite' : ''}"><span class="quetes__case">${ok ? '✓' : ''}</span><span>${echapper(q.texte)}${q.facultatif ? ' <em>(facultatif)</em>' : ''}</span></li>`;
-      })
-      .join('');
+    // Les quêtes accomplies sont résumées sur une seule ligne pour garder le panneau court.
+    const quetes = (lieu.quetes ?? []).filter((q) => !q.visible || q.visible(etat));
+    const faites = quetes.filter((q) => q.fait(etat));
+    const restantes = quetes.filter((q) => !q.fait(etat));
+    compteQuetesEl.textContent = quetes.length ? `${faites.length}/${quetes.length}` : '';
+    quetesEl.innerHTML = restantes
+      .map((q) => `<li class="${q.facultatif ? 'est-facultative' : ''}"><span class="quetes__case"></span><span>${echapper(q.texte)}</span></li>`)
+      .join('')
+      + (faites.length ? `<li class="est-faite"><span class="quetes__case">✓</span><span>${faites.length} accomplie${faites.length > 1 ? 's' : ''}</span></li>` : '');
     const cases = Math.max(5, etat.inventaire.length);
     invEl.innerHTML = `<span class="inventaire__titre">Besace</span>` + Array.from({ length: cases }, (_, i) => {
       const id = etat.inventaire[i];
@@ -228,6 +246,15 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
     }
   }
 
+  /** Lance ou arrête le balancement des jambes et des bras (animations SVG du personnage). */
+  function animerMarche(marcheur, actif) {
+    if (!marcheur || marcheur.classList.contains('marche') === actif) return;
+    marcheur.classList.toggle('marche', actif);
+    marcheur.querySelectorAll('.anim-marche').forEach((a) => {
+      try { if (actif) a.beginElement(); else a.endElement(); } catch { /* animation non prise en charge */ }
+    });
+  }
+
   function arreter() {
     if (boucle) clearInterval(boucle);
     boucle = null;
@@ -249,7 +276,7 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
       const el = cible.element;
       cible = null;
       arreter();
-      marcheur?.classList.remove('marche');
+      animerMarche(marcheur, false);
       joueur.setAttribute('transform', transformJoueur());
       cadrer();
       etat.lieux[lieu.id] = px;
@@ -258,7 +285,7 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
     }
     sens = Math.sign(d);
     px += sens * VITESSE * dt;
-    marcheur?.classList.add('marche');
+    animerMarche(marcheur, true);
     joueur.setAttribute('transform', transformJoueur());
     cadrer();
   }
@@ -294,6 +321,11 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
       return;
     }
     if (b.dataset.action === 'menu') return onMenu();
+    if (b.dataset.action === 'quetes') {
+      replie = !replie;
+      try { localStorage.setItem(CLE_REPLI, replie ? '1' : '0'); } catch { /* stockage indisponible */ }
+      return appliquerRepli();
+    }
     if (b.dataset.action === 'carnet') return ouvrirCarnet();
     if (b.dataset.action === 'fermer-carnet') { carnetEl.hidden = true; return; }
     if (b.dataset.objet) return dire(OBJETS[b.dataset.objet].nom, OBJETS[b.dataset.objet].description);
@@ -307,6 +339,7 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
   };
   document.addEventListener('keydown', clavier);
 
+  appliquerRepli();
   dessiner();
   majHud();
   if (lieu.arrivee && !etat.flags[`vu_${lieu.id}`]) {

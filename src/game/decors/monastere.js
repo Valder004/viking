@@ -1,7 +1,7 @@
 // Le monastère, une fin d'après-midi dorée. Décor large (1600) qui défile.
 // De gauche à droite : la porte enfoncée, le cloître et son puits, le jardin des simples,
 // la chapelle et son clocher, le scriptorium (avec la fresque), le dortoir et ses cellules.
-import { degrade, halo, nuage } from './elements.js';
+import { degrade, halo, nuage, poussiere } from './elements.js';
 import { arbre, peuplier } from './francie.js';
 
 const L = 1600;
@@ -212,6 +212,7 @@ export function monastere(etat) {
       <rect x="0" y="0" width="${L}" height="450" fill="#ffd08a" opacity="0.07" pointer-events="none"/>
 
       <!--persos-->
+      ${poussiere({ n: 30, x0: 700, largeur: 520, y0: 160, hauteur: 220 })}${poussiere({ n: 16, x0: 340, largeur: 300, y0: 230, hauteur: 140 })}
     </svg>`,
     joueur: { x: 590, y: 132, scale: 1.04 },
     places: [
