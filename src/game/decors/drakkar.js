@@ -1,6 +1,6 @@
 // Les décors du chapitre 2. Caméra sur le pont, tournée vers le large : au fond la mer,
 // puis le plat-bord et ses boucliers, le mât et la voile, la proue au dragon à gauche.
-import { SVG, degrade, halo, vignette, vagues, ecume, nuage, mouette, etoiles, maison, sapins, proue, feu, braises, caisse } from './elements.js';
+import { SVG, degrade, halo, vignette, vagues, ecume, nuage, mouette, etoiles, maison, sapins, proue, feu, braises, caisse, pluie as averse } from './elements.js';
 
 const rail = (x) => 303 - 12 * (1 - ((x - 400) / 420) ** 2);
 
@@ -185,7 +185,7 @@ export function tempete(etat, n = 0) {
       <!--persos-->
       <rect width="800" height="450" fill="#0a1020" opacity="0.28" pointer-events="none"/>
       <rect class="anim-eclair" width="800" height="450" fill="#cfdcff" opacity="0" pointer-events="none" style="mix-blend-mode:screen"/>
-      <g class="anim-pluie" pointer-events="none">${pluie}</g>
+      ${averse({ n: 150, eclatY: (x) => rail(x) + 4 })}
       ${vignette('t-vig', 0.75)}`),
     joueur: joueurPont(n),
     places: placesPont(n),

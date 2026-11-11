@@ -1,6 +1,6 @@
 // La hutte familiale, à l'aube. Rondins, métier à tisser, chaudron sur le foyer,
 // le bouclier fendu du père au mur, la neige par la fenêtre.
-import { SVG, halo, vignette, feu, braises, sapins } from './elements.js';
+import { SVG, halo, vignette, feu, braises, sapins, neige } from './elements.js';
 
 export function hutte() {
   const rondins = Array.from({ length: 11 }, (_, i) => {
@@ -74,7 +74,7 @@ export function hutte() {
         <path d="M670 112 L680 124 L664 126 Z M724 100 L738 116 L714 118 Z" fill="#fff"/>
         ${sapins(648, 764, 176, 30, '#3d5150', 6)}
         <path d="M640 172 Q680 162 720 172 Q750 178 770 170 L770 200 L640 200 Z" fill="#f2f5f7"/>
-        ${flocons}
+        ${neige({ n: 26, x0: 640, largeur: 130, haut: 210 })}
       </g>
       <rect x="702" y="60" width="6" height="150" fill="#2a1c12"/><rect x="630" y="132" width="150" height="5" fill="#2a1c12"/>
       <path d="M642 70 l3 10 l3 -10 Z M660 70 l2.5 14 l2.5 -14 Z M690 70 l2 8 l2 -8 Z M730 70 l3 12 l3 -12 Z M752 70 l2 7 l2 -7 Z" fill="#e6f0f7" opacity="0.9"/>

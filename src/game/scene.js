@@ -1,5 +1,5 @@
-// Rendu d'une scène : décor plein cadre, personnages, boîte de dialogue qui avance
-// réplique par réplique, puis choix (et chrono, qui ne démarre qu'à l'apparition des choix).
+// Rendu d'une scène de dialogue : décor plein cadre, personnages, panneau de dialogue compact
+// (portrait + réplique) qui avance pas à pas, puis choix. Le chrono ne démarre qu'aux choix.
 import { DECORS } from './decors/index.js';
 import { vikingContenu } from './sprites/viking.js';
 import { pnjContenu } from './sprites/pnj.js';
@@ -10,15 +10,19 @@ import { OBJETS, iconeObjet } from '../data/objets.js';
 const echapper = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const VITESSE = 16; // ms par caractère
 
-/** Compose le SVG du décor avec le joueur et les PNJ placés dessus. */
+/**
+ * Compose le SVG du décor avec le joueur et les PNJ placés dessus.
+ * Pour un décor plus large que l'écran, scene.camera donne le bord gauche de la vue.
+ */
 export function composerDecor(scene, etat) {
   const decor = DECORS[scene.decor] ?? DECORS.vide;
   const pnj = (typeof scene.personnages === 'function' ? scene.personnages(etat) : scene.personnages) ?? [];
   const presents = pnj.filter((id) => !etat.morts[id] && PERSONNAGES[id]);
   const { svg, joueur, places } = decor(etat, presents.length);
+  const cam = typeof scene.camera === 'function' ? scene.camera(etat) : scene.camera ?? 0;
 
   const groupe = (id, contenu, p) =>
-    `<g transform="translate(${p.x} ${p.y}) scale(${p.scale})${p.miroir ? ' translate(200 0) scale(-1 1)' : ''}"><g class="perso" data-perso="${id}">${contenu}</g></g>`;
+    `<g transform="translate(${p.x + cam} ${p.y}) scale(${p.scale})${p.miroir ? ' translate(200 0) scale(-1 1)' : ''}"><g class="perso" data-perso="${id}">${contenu}</g></g>`;
 
   const persos = presents
     .map((id, i) => (places[i] ? groupe(id, pnjContenu(id), places[i]) : ''))
@@ -31,25 +35,36 @@ export function composerDecor(scene, etat) {
   const complet = svg.includes('<!--persos-->')
     ? svg.replace('<!--persos-->', calque)
     : svg.replace('</svg>', `${calque}</svg>`);
-  return complet.replace('<svg ', '<svg preserveAspectRatio="xMidYMid slice" ');
+  return complet
+    .replace(/viewBox="[^"]*"/, `viewBox="${cam} 0 800 450"`)
+    .replace('<svg ', '<svg preserveAspectRatio="xMidYMid slice" ');
+}
+
+/** Portrait serré sur le visage, pour le panneau de dialogue. */
+function portrait(id, etat) {
+  const contenu = id === 'joueur' ? vikingContenu(etat.perso.apparence, etat) : pnjContenu(id);
+  return contenu ? `<svg viewBox="58 14 84 92" aria-hidden="true">${contenu}</svg>` : '';
 }
 
 export function monterScene(racine, moteur, { onMenu }) {
   racine.innerHTML = `
     <section class="jeu">
       <div class="jeu__scene" data-decor></div>
-      <div class="boite" data-boite>
+      <div class="boite panneau" data-boite>
         <div class="boite__chrono" data-chrono hidden><div class="boite__chrono-barre" data-chrono-barre></div></div>
-        <div class="boite__nom" data-nom hidden></div>
-        <div class="boite__texte" data-texte></div>
-        <div class="boite__choix" data-choix hidden></div>
-        <div class="boite__pied">
-          <button class="boite__btn" data-action="menu">Menu</button>
-          <button class="boite__btn" data-action="relire" hidden>↺ Relire</button>
-          <span class="boite__espace"></span>
-          <span class="boite__compte" data-compte></span>
-          <button class="boite__btn" data-action="passer">Passer ⏭</button>
-          <span class="boite__suite" data-suite aria-hidden="true">▼</span>
+        <div class="boite__portrait" data-portrait hidden></div>
+        <div class="boite__corps">
+          <div class="boite__nom" data-nom hidden></div>
+          <div class="boite__texte" data-texte></div>
+          <div class="boite__choix" data-choix hidden></div>
+          <div class="boite__pied">
+            <button class="boite__btn" data-action="menu">Menu</button>
+            <button class="boite__btn" data-action="relire" hidden>↺ Relire</button>
+            <span class="boite__espace"></span>
+            <span class="boite__compte" data-compte></span>
+            <button class="boite__btn" data-action="passer">Passer ⏭</button>
+            <span class="boite__suite" data-suite aria-hidden="true">▼</span>
+          </div>
         </div>
       </div>
     </section>`;
@@ -57,6 +72,7 @@ export function monterScene(racine, moteur, { onMenu }) {
   const $ = (s) => racine.querySelector(s);
   const decorEl = $('[data-decor]');
   const boite = $('[data-boite]');
+  const portraitEl = $('[data-portrait]');
   const nomEl = $('[data-nom]');
   const texteEl = $('[data-texte]');
   const choixEl = $('[data-choix]');
@@ -71,7 +87,7 @@ export function monterScene(racine, moteur, { onMenu }) {
 
   let sceneCourante = null;
   let choixCourants = [];
-  let temps = []; // paragraphes de la scène
+  let temps = []; // répliques de la scène
   let index = 0;
   let frappe = null; // { noeuds, textes, pos, total, timer }
   let auxChoix = false;
@@ -86,12 +102,15 @@ export function monterScene(racine, moteur, { onMenu }) {
   }
 
   function ecrire(html) {
+    texteEl.style.minHeight = '';
     texteEl.innerHTML = html;
     suiteEl.classList.remove('est-visible');
     if (sansAnimation) {
       suiteEl.classList.add('est-visible');
       return;
     }
+    // On réserve la hauteur finale : le panneau ne saute pas pendant la frappe.
+    texteEl.style.minHeight = `${texteEl.offsetHeight}px`;
     const marcheur = document.createTreeWalker(texteEl, NodeFilter.SHOW_TEXT);
     const noeuds = [];
     while (marcheur.nextNode()) noeuds.push(marcheur.currentNode);
@@ -117,6 +136,20 @@ export function monterScene(racine, moteur, { onMenu }) {
     decorEl.querySelectorAll('.perso').forEach((g) => g.classList.toggle('parle', g.dataset.perso === id));
   }
 
+  function montrerLocuteur(t) {
+    const html = t.id ? portrait(t.id, moteur.etat) : '';
+    portraitEl.hidden = !html;
+    portraitEl.innerHTML = html;
+    nomEl.hidden = !t.nom;
+    if (t.nom) {
+      nomEl.textContent = t.nom;
+      nomEl.style.setProperty('--couleur', t.couleur ?? 'var(--color-muted)');
+      portraitEl.style.setProperty('--couleur', t.couleur ?? '#b98a3c');
+    }
+    boite.classList.toggle('est-replique', Boolean(t.nom));
+    boite.classList.toggle('est-recit', !t.nom);
+  }
+
   function afficherTemps() {
     const t = temps[index];
     auxChoix = false;
@@ -124,12 +157,8 @@ export function monterScene(racine, moteur, { onMenu }) {
     texteEl.hidden = false;
     relireBtn.hidden = true;
     passerBtn.hidden = false;
-    nomEl.hidden = !t.nom;
-    if (t.nom) {
-      nomEl.textContent = t.nom;
-      nomEl.style.setProperty('--couleur', t.couleur ?? 'var(--color-muted)');
-    }
-    boite.classList.toggle('est-replique', Boolean(t.nom));
+    boite.classList.remove('aux-choix');
+    montrerLocuteur(t);
     compteEl.textContent = `${index + 1} / ${temps.length}`;
     eclairer(t.id);
     ecrire(t.html);
@@ -139,19 +168,21 @@ export function monterScene(racine, moteur, { onMenu }) {
     finirFrappe();
     auxChoix = true;
     eclairer(null);
+    portraitEl.hidden = true;
     nomEl.hidden = true;
     texteEl.hidden = true;
     suiteEl.classList.remove('est-visible');
     passerBtn.hidden = true;
     compteEl.textContent = '';
-    boite.classList.remove('est-replique');
+    boite.classList.remove('est-replique', 'est-recit');
+    boite.classList.add('aux-choix');
 
     const scene = sceneCourante;
     const etat = moteur.etat;
     let html = choixCourants
-      .map((c, i) => `<button class="choix ${c.objet ? 'choix--objet' : ''}" data-choix="${i}" style="--i:${i}"><span class="choix__num">${i + 1}</span><span class="choix__texte">${echapper(typeof c.texte === 'function' ? c.texte(etat) : c.texte)}</span>${c.objet ? `<span class="choix__objet" title="${echapper(OBJETS[c.objet]?.nom ?? '')}">${iconeObjet(c.objet, 26)}</span>` : ''}</button>`)
+      .map((c, i) => `<button class="choix ${c.objet ? 'choix--objet' : ''}" data-choix="${i}" style="--i:${i}"><span class="choix__num">${i + 1}</span><span class="choix__texte">${echapper(typeof c.texte === 'function' ? c.texte(etat) : c.texte)}</span>${c.objet ? `<span class="choix__objet" title="${echapper(OBJETS[c.objet]?.nom ?? '')}">${iconeObjet(c.objet, 24)}</span>` : ''}</button>`)
       .join('');
-    if (scene.aSuivre) html += `<button class="choix" data-action="menu"><span class="choix__num">↩</span>Retour au menu</button>`;
+    if (scene.aSuivre) html += `<button class="choix" data-action="menu"><span class="choix__num">↩</span><span class="choix__texte">Retour au menu</span></button>`;
     choixEl.innerHTML = html;
     choixEl.classList.toggle('est-seul', choixCourants.length + (scene.aSuivre ? 1 : 0) === 1);
     choixEl.hidden = false;

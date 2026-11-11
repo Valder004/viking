@@ -2,6 +2,7 @@
 // La nuit au port est un lieu explorable : on y marche, on y parle, on y ramasse de quoi agir.
 import { fx, si } from '../outils.js';
 import { ORIGINES } from '../origines.js';
+import { armeMurale } from '../../game/sprites/armes.js';
 
 const objet = (e) => ORIGINES[e.perso.origine].objet;
 const prendreObjetFamille = (e) => fx.prendre(objet(e).id)(e);
@@ -16,12 +17,20 @@ export const CH1 = [
     decor: 'hutte',
     titre: 'La hutte, avant l’aube',
     arrivee: 'Il fait encore nuit quand ta mère te secoue. Elle ne dit rien. Elle a ce visage des matins où quelqu’un part. Le feu est déjà ranimé.',
+    // Tant que l'arme est au mur, le joueur est dessiné sans elle.
+    entree: (e) => { if (!e.flags.arme_prise) e.flags.sans_arme = true; },
+    conseil: (e) => (!e.flags.c1_mere_vue
+      ? 'Ta mère t’attend près du métier à tisser. Clique sur elle pour lui parler.'
+      : e.flags.sans_arme
+        ? 'Ton arme et ton bouclier sont accrochés au mur, près de la porte. Clique dessus pour les prendre.'
+        : e.flags.c1_cour_vue ? null : 'Te voilà prêt·e. Clique sur la porte, à droite, pour sortir.'),
     sol: { y: 424, xmin: 70, xmax: 740 },
     depart: 420,
     quetes: [
       { texte: 'Parler à ta mère', fait: si.flag('c1_mere_vue') },
       { texte: 'Regarder une dernière fois', fait: si.et(si.flag('c1_bouclier_vu'), si.flag('c1_fenetre_vue')), facultatif: true },
-      { texte: 'Aller à la grande halle', visible: si.flag('c1_mere_vue'), fait: () => false },
+      { texte: 'Prendre ton arme et ton bouclier', visible: si.flag('c1_mere_vue'), fait: si.flag('arme_prise') },
+      { texte: 'Sortir dans le village', visible: si.flag('arme_prise'), fait: () => false },
     ],
     elements: [
       {
@@ -48,8 +57,30 @@ export const CH1 = [
         action: { examiner: 'La neige tombe droite, sans vent, comme si elle aussi attendait. En bas, le port se réveille : un seau, une corde, quelqu’un qui tousse.', effets: fx.flag('c1_fenetre_vue') },
       },
       {
+        id: 'arme', type: 'zone', x: 588, y: 166, l: 70, h: 176, nom: 'Ton arme et ton bouclier',
+        visible: si.flag('sans_arme'),
+        important: si.flag('c1_mere_vue'),
+        dessin: (e) => armeMurale(e.perso.apparence, 588, 92),
+        action: (e) => ({
+          examiner: {
+            hache: 'Ta hache. Tu l’as affûtée hier soir, et encore ce matin, sans raison. Le bouclier pèse moins que dans ton souvenir. Ça ne durera pas.',
+            epee: 'Ton épée. Elle a coûté trois hivers de travail. Tu la passes à ta ceinture comme on met un nom. Le bouclier pèse moins que dans ton souvenir.',
+            lance: 'Ta lance. Elle te dépasse d’une tête, et elle t’a déjà gardé·e en vie contre un sanglier. Les Francs sont plus grands. Tu prends aussi le bouclier.',
+            arc: 'Ton arc. Tu le bandes une fois, par habitude, et tu écoutes la corde. Elle chante juste. Tu prends aussi le bouclier, pour ce que ça vaudra.',
+          }[e.perso.apparence.arme] ?? 'Tu décroches ton arme et ton bouclier.',
+          effets: (x) => { x.flags.sans_arme = false; x.flags.arme_prise = true; },
+        }),
+      },
+      {
         id: 'sortie', type: 'sortie', x: 756, nom: 'Sortir',
-        action: { suivant: 'c1_halle', condition: si.flag('c1_mere_vue'), refus: 'Ta mère est debout près du métier à tisser. Elle ne t’appelle pas. C’est à toi d’y aller.' },
+        action: {
+          suivant: 'c1_cour',
+          position: 190,
+          condition: si.et(si.flag('c1_mere_vue'), si.flag('arme_prise')),
+          refus: (e) => (!e.flags.c1_mere_vue
+            ? 'Ta mère est debout près du métier à tisser. Elle ne t’appelle pas. C’est à toi d’y aller.'
+            : 'On ne part pas en raid les mains vides. Ton arme est au mur, près de la porte.'),
+        },
       },
     ],
   },
@@ -94,20 +125,78 @@ ${objet(e).texte}`,
 
 **Ta mère :** « Les promesses, c'est pour les scaldes. Reviens, c'est tout. »
 
-Tu enfiles ta tunique. Le froid entre par la porte avant toi.`;
+**Ta mère :** « Ton arme est au mur, près de la porte. Ne pars pas sans elle. Et ne reviens pas sans toi. »`;
       if (e.flags.objet_refuse)
         return `Elle referme la main. Quelque chose passe sur son visage, trop vite pour que tu saches si c'est de la fierté ou de la peur.
 
 **Ta mère :** « Tu es bien son enfant. »
 
-Ce n'est pas un compliment. Ce n'est pas une insulte non plus. Tu enfiles ta tunique. Le froid entre par la porte avant toi.`;
+Ce n'est pas un compliment. Ce n'est pas une insulte non plus. **Ta mère :** « Ton arme est au mur, près de la porte. Ne pars pas sans elle. Et ne reviens pas sans toi. »`;
       return `Tu le glisses dans ta ceinture. Elle ne te regarde pas faire ; elle regarde le feu.
 
 **Ta mère :** « Hakon parle fort. Les hommes qui parlent fort ont besoin de gens qui écoutent. Ne sois pas de ceux-là. »
 
-Tu enfiles ta tunique. Le froid entre par la porte avant toi.`;
+**Ta mère :** « Ton arme est au mur, près de la porte. Ne pars pas sans elle. Et ne reviens pas sans toi. »`;
     },
-    choix: [{ texte: 'Enfiler ta tunique.', suivant: 'c1_hutte' }],
+    choix: [{ texte: 'Hocher la tête.', suivant: 'c1_hutte' }],
+  },
+
+  // ------------------------------------------------ La cour (exploration, large)
+  {
+    id: 'c1_cour',
+    type: 'lieu',
+    decor: 'cour',
+    largeur: 1600,
+    titre: 'Le village',
+    entree: fx.flag('c1_cour_vue'),
+    arrivee: 'Le froid te prend au visage. Le village s’éveille sous la neige : la forge rougeoie déjà, et tout le monde monte vers la grande halle. Marche vers la droite.',
+    sol: { y: 430, xmin: 40, xmax: 1572 },
+    depart: 190,
+    quetes: [
+      { texte: 'Monter à la grande halle', fait: si.flag('c1_discours_vu') },
+      { texte: 'Passer à la forge', fait: si.flag('pris_pierre'), facultatif: true },
+      { texte: 'Descendre au port', visible: si.flag('c1_discours_vu'), fait: () => false },
+    ],
+    elements: [
+      {
+        id: 'porte_hutte', type: 'zone', x: 160, y: 300, l: 84, h: 150, nom: 'La hutte familiale',
+        action: { suivant: 'c1_hutte', position: 700 },
+      },
+      {
+        id: 'bois', type: 'zone', x: 334, y: 346, l: 64, h: 56, nom: 'Le tas de bois',
+        action: { examiner: 'Assez de bûches pour l’hiver. Tu les as fendues toi-même, à l’automne. Ta mère n’aura pas à demander.' },
+      },
+      {
+        id: 'puits', type: 'zone', x: 430, y: 310, l: 84, h: 130, nom: 'Le puits',
+        action: { examiner: (e) => (e.flags.c1_discours_vu
+          ? 'L’eau du puits est noire. Tout au fond, la lune. Quelque chose passe devant, une seconde, et la lune revient.'
+          : 'Tu remontes le seau. Sur l’eau, une plume noire. Tu la retires du bout des doigts et tu bois quand même.') },
+      },
+      {
+        id: 'forge', type: 'zone', x: 734, y: 290, l: 110, h: 150, nom: 'La forge',
+        action: { examiner: (e) => (e.perso.origine === 'forgeron'
+          ? 'La forge de ton père. Il n’est pas là ; il n’aime pas les départs. Il a laissé le feu allumé et une pierre à aiguiser sur l’enclume. C’est sa façon de dire au revoir.'
+          : 'Le forgeron n’est pas là. Le feu, si. Des fers de lance refroidissent dans le baquet : il a travaillé toute la nuit pour Hakon.') },
+      },
+      {
+        id: 'pierre', type: 'objet', objet: 'pierre', x: 829, y: 314, nom: 'Une pierre à aiguiser',
+        action: { prendre: 'pierre', texte: 'Elle est posée sur l’enclume, usée en creux par vingt ans de lames. Personne ne la réclamera avant ton retour.' },
+      },
+      {
+        id: 'porte_halle', type: 'zone', x: 1136, y: 296, l: 116, h: 164, nom: 'La grande halle',
+        important: si.pasFlag('c1_discours_vu'),
+        action: { suivant: 'c1_halle', position: 640 },
+      },
+      {
+        id: 'sortie', type: 'sortie', x: 1572, nom: 'Descendre au port',
+        action: {
+          suivant: 'c1_port',
+          position: 404,
+          condition: si.flag('c1_discours_vu'),
+          refus: 'Le chemin du port est vide. Tout le village est dans la grande halle : le jarl parle ce matin, et personne ne manque ça.',
+        },
+      },
+    ],
   },
 
   // ------------------------------------------- La grande halle (exploration)
@@ -122,7 +211,7 @@ Tu enfiles ta tunique. Le froid entre par la porte avant toi.`;
     quetes: [
       { texte: 'Écouter le jarl', fait: si.flag('c1_discours_vu') },
       { texte: 'Prendre la température de la halle', fait: si.et(si.flag('c1_halle_sigrid'), si.flag('c1_halle_ulf')), facultatif: true },
-      { texte: 'Sortir prendre l’air', visible: si.flag('c1_discours_vu'), fait: () => false },
+      { texte: 'Sortir et descendre au port', visible: si.flag('c1_discours_vu'), fait: () => false },
     ],
     elements: [
       {
@@ -159,8 +248,8 @@ Tu enfiles ta tunique. Le froid entre par la porte avant toi.`;
         action: { prendre: 'biere', texte: 'Tu remplis une corne pendant que tout le monde regarde Hakon. Elle mousse. Tu la tiens droite.' },
       },
       {
-        id: 'sortie', type: 'sortie', x: 686, nom: 'Sortir prendre l’air',
-        action: { suivant: 'c1_port', condition: si.flag('c1_discours_vu'), refus: 'Personne ne sort pendant que le jarl se lève. Et il va se lever.' },
+        id: 'sortie', type: 'sortie', x: 686, nom: 'Sortir de la halle',
+        action: { suivant: 'c1_cour', position: 1136, condition: si.flag('c1_discours_vu'), refus: 'Personne ne sort pendant que le jarl se lève. Et il va se lever.' },
       },
     ],
   },
@@ -700,6 +789,12 @@ Elle te regarde enfin.
         suivant: 'c1_port_sigrid_suite',
       },
       {
+        texte: 'Lui tendre la pierre à aiguiser. « Cassée, pas morte. »',
+        objet: 'pierre',
+        effets: fx.tous(fx.flag('couteau_aiguise'), fx.confiance('sigrid', 2)),
+        suivant: 'c1_port_sigrid_suite',
+      },
+      {
         texte: 'Ne rien dire. Rester là, avec elle.',
         effets: fx.tous(fx.flag('sigrid_silence'), fx.confiance('sigrid', 1)),
         suivant: 'c1_port_sigrid_suite',
@@ -722,6 +817,14 @@ Tu cours à la forge de ton père. La lame est bonne ; la cassure est franche. Q
 **Toi :** « Il n'aurait pas eu besoin. »
 
 Elle le glisse à sa ceinture. Elle ne dit pas merci. Elle n'en a pas besoin non plus.`;
+      if (e.flags.couteau_aiguise)
+        return `Elle regarde la pierre, puis toi. Elle la prend.
+
+Le bruit de l'acier sur la pierre, dans la nuit, long, régulier. Ce qui reste de la lame tient dans une paume. Quand elle a fini, ça coupe un cheveu.
+
+**Sigrid :** « Il disait qu'une lame courte, c'est une lame qui oblige à s'approcher. »
+
+Elle garde la pierre. Tu ne la réclames pas. Elle glisse le moignon de couteau à sa ceinture, côté cœur.`;
       if (e.flags.promesse_vengeance)
         return `Elle hoche la tête, une fois. Pas de sourire. Les serments, chez elle, ne se fêtent pas ; ils se tiennent.
 

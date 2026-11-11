@@ -138,3 +138,53 @@ export function caisse(x, y, s = 1) {
     <path d="M-22 -32 L22 0 M-22 -22 L22 -22 M-22 -10 L22 -10" stroke="#2a1d12" stroke-width="1.5"/>
     <rect x="-22" y="-32" width="44" height="32" fill="none" stroke="#2a1d12" stroke-width="2.5"/></g>`;
 }
+
+// ---- Météo ------------------------------------------------------------------
+// Chaque flocon ou goutte a sa propre durée et son propre décalage (variables CSS),
+// ce qui évite l'effet « rideau qui descend d'un bloc ».
+
+const alea = (i, k) => {
+  const v = Math.sin(i * 127.1 + k * 311.7) * 43758.5453;
+  return v - Math.floor(v);
+};
+
+/**
+ * Neige sur trois profondeurs : lointaine (fine, lente), moyenne, proche (grosse, rapide).
+ * Les flocons dérivent de gauche à droite en tombant.
+ */
+export function neige({ n = 70, x0 = 0, largeur = 800, haut = 450, force = 1 } = {}) {
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    const couche = i % 3; // 0 loin, 1 milieu, 2 près
+    const x = x0 + alea(i, 1) * largeur;
+    const r = [0.9, 1.6, 2.7][couche] + alea(i, 2) * [0.4, 0.6, 1][couche];
+    const duree = ([19, 12, 7][couche] + alea(i, 3) * [6, 4, 2.5][couche]) / force;
+    const retard = -alea(i, 4) * duree;
+    const derive = 3 + alea(i, 5) * 4;
+    const ampli = [6, 12, 22][couche];
+    s += `<g class="flocon" style="--d:${duree.toFixed(2)}s;--r:${retard.toFixed(2)}s;--h:${haut + 40}px"><circle class="flocon__grain" style="--s:${derive.toFixed(2)}s;--a:${ampli}px" cx="${x.toFixed(1)}" cy="0" r="${r.toFixed(2)}" fill="#fff" opacity="${[0.45, 0.7, 0.9][couche]}"/></g>`;
+  }
+  return `<g class="meteo" pointer-events="none">${s}</g>`;
+}
+
+/** Pluie battante en deux couches, avec éclaboussures sur une ligne (pont, quai…). */
+export function pluie({ n = 110, largeur = 800, haut = 450, eclatY = null } = {}) {
+  let s = '';
+  for (let i = 0; i < n; i++) {
+    const pres = i % 3 === 0;
+    const x = -40 + alea(i, 1) * (largeur + 160);
+    const duree = (pres ? 0.42 : 0.7) + alea(i, 2) * 0.25;
+    const retard = -alea(i, 3) * duree;
+    const l = pres ? 34 : 20;
+    s += `<g class="goutte" style="--d:${duree.toFixed(2)}s;--r:${retard.toFixed(2)}s;--h:${haut + 80}px"><line x1="${x.toFixed(1)}" y1="-40" x2="${(x - l * 0.32).toFixed(1)}" y2="${-40 + l}" stroke="#d6e2ee" stroke-width="${pres ? 1.8 : 1.1}" stroke-linecap="round" opacity="${pres ? 0.55 : 0.32}"/></g>`;
+  }
+  let eclats = '';
+  if (eclatY !== null) {
+    for (let i = 0; i < 26; i++) {
+      const x = alea(i, 7) * largeur;
+      const y = typeof eclatY === 'function' ? eclatY(x) : eclatY;
+      eclats += `<ellipse class="eclat" style="--r:${(-alea(i, 8) * 1.4).toFixed(2)}s;--d:${(0.5 + alea(i, 9) * 0.6).toFixed(2)}s" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" rx="7" ry="2.200" fill="none" stroke="#dfe8f2" stroke-width="1.300"/>`;
+    }
+  }
+  return `<g class="meteo" pointer-events="none">${eclats}${s}</g>`;
+}

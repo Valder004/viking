@@ -81,6 +81,7 @@ export function apparenceAuHasard() {
 
 /** Contenu SVG (sans balise <svg>) du viking, dans une boîte 200×300. */
 export function vikingContenu(a, etat) {
+  const desarme = Boolean(etat?.flags?.sans_arme); // tutoriel : l arme est encore au mur
   return personnage({
     peau: a.peau,
     cheveux: a.cheveux,
@@ -90,8 +91,8 @@ export function vikingContenu(a, etat) {
     peintureCouleur: a.peintureCouleur,
     tenue: a.tenue,
     casque: a.casque,
-    bouclier: { motif: a.motif, c1: a.bouclier1, c2: a.bouclier2 },
-    arme: a.arme,
+    bouclier: desarme ? null : { motif: a.motif, c1: a.bouclier1, c2: a.bouclier2 },
+    arme: desarme ? null : a.arme,
     blessures: etat?.blessures ?? [],
   });
 }

@@ -7,6 +7,7 @@ import { hutte } from './hutte.js';
 import { halle } from './halle.js';
 import { port } from './port.js';
 import { depart, mer, ilot, tempete, brouillard } from './drakkar.js';
+import { cour } from './cour.js';
 
 export const vide = () => ({
   svg: `<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
@@ -15,4 +16,4 @@ export const vide = () => ({
   places: [],
 });
 
-export const DECORS = { vide, hutte, halle, port, depart, mer, ilot, tempete, brouillard };
+export const DECORS = { vide, hutte, halle, port, cour, depart, mer, ilot, tempete, brouillard };

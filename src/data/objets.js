@@ -15,6 +15,12 @@ export const OBJETS = {
       <path d="M29 20 l8 -7 l0 14 Z" fill="#7d8e9b"/><circle cx="10" cy="18.500" r="1.800" fill="#1a110a"/>
       <path d="M15 16 l0 8 M20 15 l0 10" stroke="rgba(0,0,0,0.3)" stroke-width="1.200"/>`,
   },
+  pierre: {
+    nom: 'Pierre à aiguiser',
+    description: 'Prise à la forge. Elle a rendu leur fil à plus de lames que le village ne compte de morts.',
+    icone: `<path d="M5 24 L12 14 L33 12 L36 22 L28 30 L8 31 Z" fill="#8a8f96"/><path d="M12 14 L33 12 L36 22 L14 23 Z" fill="#aab0b6"/>
+      <path d="M14 23 L36 22 L28 30 L8 31 Z" fill="rgba(0,0,0,0.25)"/><path d="M16 17 l14 -1 M17 20 l12 -1" stroke="#e3e7ea" stroke-width="1.200"/>`,
+  },
   biere: {
     nom: 'Corne de bière',
     description: 'Tirée au tonneau de la halle pendant que personne ne regardait. Elle mousse encore.',

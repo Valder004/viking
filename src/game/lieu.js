@@ -26,6 +26,8 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
   const etat = moteur.etat;
   const sol = lieu.sol;
   let px = Math.max(sol.xmin, Math.min(sol.xmax, etat.lieux[lieu.id] ?? lieu.depart ?? 400));
+  const largeur = lieu.largeur ?? 800; // un lieu plus large que l ecran defile avec le joueur
+  const camera = () => Math.max(0, Math.min(largeur - 800, px - 400));
   let sens = 1;
   let cible = null; // { x, element }
   let boucle = null;
@@ -97,13 +99,13 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
         <rect x="${el.x - 34}" y="${sol.y - HAUT}" width="68" height="${HAUT}" fill="transparent"/>
         <g class="marqueur marqueur--sortie" transform="translate(${el.x} ${sol.y - 78})">
           <circle r="13" fill="#1a120b" stroke="#6b5a3a" stroke-width="1.200" opacity="0.9"/>
-          <path d="${el.x < 400 ? 'M4 -6 L-4 0 L4 6' : 'M-4 -6 L4 0 L-4 6'}" fill="none" stroke="#e0a04f" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round"/>
-          <text class="etiquette" y="-20" text-anchor="${el.x < 400 ? 'start' : 'end'}" x="${el.x < 400 ? -12 : 12}">${echapper(el.nom)}</text></g></g>`;
+          <path d="${el.x < largeur / 2 ? 'M4 -6 L-4 0 L4 6' : 'M-4 -6 L4 0 L-4 6'}" fill="none" stroke="#e0a04f" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round"/>
+          <text class="etiquette" y="-20" text-anchor="${el.x < largeur / 2 ? 'start' : 'end'}" x="${el.x < largeur / 2 ? -12 : 12}">${echapper(el.nom)}</text></g></g>`;
     }
     // zone : quelque chose du décor
     const l = el.l ?? 60;
     const h = el.h ?? 60;
-    return `<g class="lieu-el" data-el="${el.id}">
+    return `<g class="lieu-el" data-el="${el.id}">${el.dessin ? el.dessin(etat) : ''}
       <rect x="${el.x - l / 2}" y="${el.y - h / 2}" width="${l}" height="${h}" fill="transparent"/>${marque(el.x, el.y - h / 2 - 2)}</g>`;
   }
 
@@ -121,6 +123,11 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
     const complet = svg.includes('<!--persos-->') ? svg.replace('<!--persos-->', calque) : svg.replace('</svg>', `${calque}</svg>`);
     // Ancré en bas : sur un écran très large, c'est le ciel qui est rogné, jamais le sol.
     decorEl.innerHTML = complet.replace('<svg ', '<svg preserveAspectRatio="xMidYMax slice" ');
+    cadrer();
+  }
+
+  function cadrer() {
+    decorEl.querySelector('svg')?.setAttribute('viewBox', camera().toFixed(1) + ' 0 800 450');
   }
 
   function majHud() {
@@ -138,6 +145,10 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
         ? `<button class="inventaire__case est-pleine" data-objet="${id}" title="${echapper(OBJETS[id]?.nom ?? id)}">${iconeObjet(id, 34)}</button>`
         : `<span class="inventaire__case"></span>`;
     }).join('');
+    const conseil = lieu.conseil ? lieu.conseil(etat) : null;
+    aideEl.textContent = conseil ?? AIDE;
+    aideEl.classList.toggle('est-conseil', Boolean(conseil));
+    aideEl.classList.toggle('panneau', Boolean(conseil));
   }
 
   // ---- Bulle et carnet --------------------------------------------------------
@@ -178,8 +189,10 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
     etat.lieux[lieu.id] = px;
     if (a.scene) return moteur.aller(a.scene);
     if (a.suivant) {
-      if (a.condition && !a.condition(etat)) return dire(el.nom, a.refus ?? 'Pas encore.');
-      return moteur.aller(moteur.resoudre(a.suivant));
+      if (a.condition && !a.condition(etat)) return dire(el.nom, (typeof a.refus === 'function' ? a.refus(etat) : a.refus) ?? 'Pas encore.');
+      const vers = moteur.resoudre(a.suivant);
+      if (a.position !== undefined) etat.lieux[vers] = a.position;
+      return moteur.aller(vers);
     }
     if (a.prendre) {
       moteur.avecNotifs(() => {
@@ -205,7 +218,7 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
 
   // ---- Déplacement ------------------------------------------------------------
   function allerVers(x, element = null) {
-    aideEl.classList.add('est-lue'); // l'aide s'efface dès le premier pas
+    if (!aideEl.classList.contains('est-conseil')) aideEl.classList.add('est-lue'); // l'aide s'efface dès le premier pas
     const borne = Math.max(sol.xmin, Math.min(sol.xmax, x));
     cible = { x: borne, element };
     if (!boucle) {
@@ -238,6 +251,7 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
       arreter();
       marcheur?.classList.remove('marche');
       joueur.setAttribute('transform', transformJoueur());
+      cadrer();
       etat.lieux[lieu.id] = px;
       if (el) interagir(el);
       return;
@@ -246,6 +260,7 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
     px += sens * VITESSE * dt;
     marcheur?.classList.add('marche');
     joueur.setAttribute('transform', transformJoueur());
+    cadrer();
   }
 
   function pointDecor(ev) {
@@ -294,7 +309,6 @@ export function monterLieu(racine, moteur, lieu, { onMenu }) {
 
   dessiner();
   majHud();
-  aideEl.textContent = AIDE;
   if (lieu.arrivee && !etat.flags[`vu_${lieu.id}`]) {
     etat.flags[`vu_${lieu.id}`] = true;
     dire(lieu.titre, typeof lieu.arrivee === 'function' ? lieu.arrivee(etat) : lieu.arrivee);

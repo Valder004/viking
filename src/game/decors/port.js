@@ -1,6 +1,6 @@
 // Le port : drakkar à quai, village sur la rive, montagnes enneigées.
 // Deux ambiances (nuit / petit matin). Les corbeaux et le chien suivent l'histoire.
-import { SVG, degrade, halo, vignette, vagues, ecume, etoiles, maison, sapins, proue, tonneau, caisse, corbeau, mouette, nuage } from './elements.js';
+import { SVG, degrade, halo, vignette, vagues, ecume, etoiles, maison, sapins, proue, tonneau, caisse, corbeau, mouette, nuage, neige } from './elements.js';
 
 function chien(x, y) {
   return `<g transform="translate(${x} ${y})">
@@ -120,7 +120,7 @@ export function port(etat, nbPnj = 0) {
       </g>
 
       <!--persos-->
-      <g pointer-events="none">${flocons}</g>
+      ${neige({ n: 90 })}
       ${vignette('p-vig', nuit ? 0.7 : 0.45)}`),
     joueur: { x: 606, y: 132, scale: 1.05 },
     places: nbPnj <= 1
